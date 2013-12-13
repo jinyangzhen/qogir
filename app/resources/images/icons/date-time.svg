@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
+	<!ENTITY st0 "fill-rule:evenodd;clip-rule:evenodd;">
+]>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="16px" height="16px" viewBox="0 0 16 16" style="enable-background:new 0 0 16 16;" xml:space="preserve">
+<g id="schedule_16">
+	<path style="&st0;" d="M11.5,1C9.015,1,7,3.015,7,5.5S9.015,10,11.5,10S16,7.985,16,5.5S13.985,1,11.5,1z M11.5,8.995
+		c-1.931,0-3.495-1.564-3.495-3.495S9.569,2.005,11.5,2.005s3.495,1.564,3.495,3.495S13.431,8.995,11.5,8.995z M13,11h-3v-0.213
+		c-0.349-0.099-0.683-0.23-1-0.393V11H6V8h0.605C6.443,7.683,6.312,7.349,6.213,7H6V4h0.213c0.099-0.349,0.23-0.683,0.393-1H1v13h13
+		v-5.605c-0.317,0.162-0.651,0.294-1,0.393V11z M5,15H2v-3h3V15z M5,11H2V8h3V11z M5,7H2V4h3V7z M9,15H6v-3h3V15z M13,15h-3v-3h3V15
+		z M12,3h-1v2.93l-0.029,0.029L11,5.988V6h0.012l1.436,1.436l0.707-0.707L12,5.574V3z"/>
+</g>
+</svg>

@@ -1,0 +1,162 @@
+//--------------------Gradiented fills-----------------------------------------------------------
+
+.gradient(@bottom-color:@gray-240, @top-color:white){
+	background:-moz-linear-gradient(center top,@bottom-color 100%,@top-color 100%) no-repeat scroll 0 12px @top-color;
+	background:-webkit-gradient(linear,left top,left bottom,color-stop(0%,@top-color),color-stop(50%,@top-color),color-stop(50%,@bottom-color),color-stop(51%,@bottom-color));
+	background:-webkit-linear-gradient(center top,@bottom-color 100%,@top-color 100%) no-repeat scroll 0 12px;
+	background:-webkit-linear-gradient(top,@top-color 0%,@top-color 50%,@bottom-color 50%,@bottom-color 51%);
+    background: -ms-linear-gradient(bottom,  @bottom-color 50%,@top-color 50%); /* IE10+ */
+    background: -o-linear-gradient(top, @top-color 0%,@top-color 50%,@bottom-color 50%,@bottom-color 51%); /* Opera 11.10+ */
+	transition: background-position 0.0s linear;
+	// background: #0096d6; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+	// background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiMyOTg5ZDgiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiMxZTU3OTkiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr=@top-color, endColorstr=@top-color,GradientType=0 ); /* IE6-8 */
+}
+
+.gradient-default             {.gradient (@bottom-color:@gray-240,@top-color: white);}
+.gradient-default-hover       {.gradient (@bottom-color:@gray-240,@top-color: white);}
+.gradient-default-active      {.gradient (@bottom-color:@gray-200,@top-color:@gray-200);}
+
+.gradient-primary             {.gradient (@bottom-color:@blue-hover,@top-color:@blue);}
+.gradient-primary-hover       {.gradient (@bottom-color:@blue-active,@top-color:@blue-hover);}
+.gradient-primary-active      {.gradient (@bottom-color:@blue-active,@top-color:@blue-active);}
+
+.gradient-error               {.gradient (@bottom-color:@red-hover,@top-color:@red);}
+.gradient-error-hover         {.gradient (@bottom-color:@red-active,@top-color:@red-hover);}
+.gradient-error-active        {.gradient (@bottom-color:@red-active,@top-color:@red-active);}
+
+
+.fill-default-gradient{
+							  .gradient-default;
+							  &:hover{.gradient-default-hover};
+							  &:active{.gradient-default-active};
+}
+.fill-primary-gradient{
+							  .gradient-primary;
+							  &:hover{.gradient-primary-hover};
+							  &:active{.gradient-primary-active};
+}
+.fill-error-gradient{
+							  .gradient-error;
+							  &:hover{.gradient-error-hover};
+							  &:active{.gradient-error-active};
+}
+
+.fill-default-gradient{
+							  .gradient-default;
+							  &:hover{.gradient-default-hover};
+							  &:active{.gradient-default-active};
+}
+.fill-primary-gradient{
+							  .gradient-primary;
+							  &:hover{.gradient-primary-hover};
+							  &:active{.gradient-primary-active};
+}
+.fill-error-gradient{
+							  .gradient-error;
+							  &:hover{.gradient-error-hover};
+							  &:active{.gradient-error-active};
+}
+
+//----------------------------------------------------------------------------------------------
+
+//-------------------------------Flatt fills------------------------------------------------
+
+.flat(@background-color:white){ 
+	background-color: @background-color;
+
+}
+
+.flat-default             {.flat (@background-color: white);}
+.flat-default-hover       {.flat (@background-color: white);}
+.flat-default-active      {.flat (@background-color: white);}
+
+.flat-primary             {.flat (@background-color: @blue);}
+.flat-primary-hover       {.flat (@background-color: @blue-hover);}
+.flat-primary-active      {.flat (@background-color: @blue-active);}
+
+.flat-error               {.flat (@background-color: @red);}
+.flat-error-hover         {.flat (@background-color: @red-hover);}
+.flat-error-active        {.flat (@background-color: @red-active);}
+
+.fill-default-flat{
+						  .flat-default;
+						  &:hover{.flat-default-hover};
+						  &:active{.flat-default-active};
+}
+.fill-primary-flat{
+						  .flat-primary;
+						  &:hover{.flat-primary-hover};
+						  &:active{.flat-primary-active};
+}
+.fill-error-flat{
+						  .flat-error;
+						  &:hover{.flat-error-hover};
+						  &:active{.flat-error-active};
+}
+
+//----------------------------- Fills-----------------------------------------------------------
+
+.fill-default              {.fill-default-gradient;}
+.fill-primary              {.fill-primary-gradient;}
+.fill-error                {.fill-error-gradient;}
+
+//----------------------------------------------------------------------------------------------
+
+//------------------------------Strokes---------------------------------------------------------
+
+.stroke                     {border: 1px solid @gray-200;&:hover{border: 1px solid @gray-80};}
+.stroke-primary             {border: 1px solid @blue-dark;&:hover{border: 1px solid @blue-active};}
+.stroke-error               {border: 1px solid @red-hover;&:hover{border: 1px solid @red-active};}
+.stroke-error-forms         {border: 1px solid @red;&:hover{border: 1px solid @red-active};}
+
+//----------------------------------------------------------------------------------------------
+
+//---------------------------Backgrounds----------------------------------------
+.blue{background-color: @blue;
+	&:hover{background-color: @blue-hover}
+	&:active{background-color: @blue-active}
+}
+
+.purple{background-color: @purple;
+	&:hover{background-color: @purple-hover}
+	&:active{background-color: @purple-active}
+}
+.green{background-color: @green;
+	&:hover{background-color: @green-hover}
+	&:active{background-color: @green-active}
+}
+.yellow{background-color: @yellow;
+	&:hover{background-color: @yellow-hover}
+	&:active{background-color: @yellow-active}
+}
+.orange{background-color: @orange;
+
+	&:hover{background-color: @orange-hover}
+	&:active{background-color: @orange-active}
+}
+.red{background-color: @red;
+	&:hover{background-color: @red-hover}
+	&:active{background-color: @red-active}
+}
+
+.gray-20{background-color: @gray-20;}
+.gray-40{background-color: @gray-40;}
+.gray-60{background-color: @gray-60;}
+.gray-80{background-color: @gray-80;}
+.gray-100{background-color: @gray-100;}
+.gray-120{background-color: @gray-120;}
+.gray-140{background-color: @gray-140;}
+.gray-160{background-color: @gray-160;}
+.gray-180{background-color: @gray-180;}
+.gray-200{background-color: @gray-200;}
+.gray-220{background-color: @gray-220;}
+.gray-240{background-color: @gray-240;}
+
+// Opacity (stolen from bootstrap)
+.opacity(@opacity) {
+  opacity: @opacity / 100;
+  filter: ~"alpha(opacity=@{opacity})";
+}

@@ -1,0 +1,143 @@
+.checkboxes-indent {
+	margin-left:20px
+}
+.checkboxes-header {
+	margin:0 0 5px
+}
+.checkboxes-main {
+	margin:0
+}
+:root .radios label,
+:root .radios input[type="radio"] + span,
+:root .radios input[type="radio"] + span::before,
+:root .checkboxes label,
+:root .checkboxes input[type="checkbox"] + span,
+:root .checkboxes input[type="checkbox"] + span::before {
+	display:inline-block;
+	vertical-align:middle;
+}
+:root .radios,
+:root .checkboxes {
+	position:relative
+}
+:root .radios label *,
+:root .checkboxes label * {
+	cursor:pointer
+}
+:root .radios input[type="radio"],
+:root .checkboxes input[type="checkbox"] {
+	position:absolute;
+	display:none
+}
+:root .radios input[type="radio"] + span,
+:root .checkboxes input[type="checkbox"] + span {
+	color:#333;
+	line-height: 15px;
+}
+:root .radios label:hover span,
+:root .checkboxes label:hover span {
+	color:#000
+}
+:root .radios input[type="radio"] + span::before,
+:root .checkboxes input[type="checkbox"] + span:before {
+	margin:0 4px 0 0;
+	width:13px;
+	height:13px;
+	border:solid 1px #ccc;
+	background-size:13px;
+	background-color: white;
+	content:"";
+	text-align:center;
+	line-height:17px
+}
+:root .radios input[type="radio"]:checked + span::before,
+:root .radios input[type="radio"]:disabled + span,
+:root .checkboxes input[type="checkbox"]:disabled + span {
+	opacity:.4;
+	cursor:default
+}
+:root .checkboxes input[type="checkbox"] + span:before {
+	border-radius:0;
+}
+:root .radios input[type="radio"]:checked + span:before {
+	content:"\2022";
+	font-size:24px
+}
+:root .checkboxes input[type="checkbox"]:checked + span::before {
+	content:"\2714";
+	font-size:14px;
+	font-family:arial
+}
+.radios label,
+.radios input[type="radio"] + span,
+.radios input[type="radio"] + span::before,
+.checkboxes label,
+.checkboxes input[type="checkbox"] + span,
+.checkboxes input[type="checkbox"] + span::before {
+	display:inline-block;
+	vertical-align:middle;
+}
+.radios,
+.checkboxes {
+	position:relative
+}
+.radios label *,
+.checkboxes label * {
+	cursor:pointer
+}
+.radios input[type="radio"],
+.checkboxes input[type="checkbox"] {
+	position:absolute;
+	display:none
+}
+.radios input[type="radio"] + span,
+.checkboxes input[type="checkbox"] + span {
+	color:#333
+}
+.radios label:hover span,
+.checkboxes label:hover span {
+	color:#000
+}
+.radios input[type="radio"] + span::before,
+.checkboxes input[type="checkbox"] + span::before {
+	margin:0 4px 0 0;
+	width:13px;
+	height:13px;
+	border:solid 2px #ccc;
+	background-size:13px;
+	content:"";
+	text-align:center;
+	line-height:13px
+}
+.checkboxes input[type="checkbox"]:not([disabled]) + span:hover:before {
+  border-color: #5a5a5a;
+}
+.radios input[type="radio"]:checked + span::before,
+.checkboxes input[type="checkbox"]:checked + span::before {
+	width:17px;
+	height:17px;
+	border:none;
+	background-color:#0096d6;
+	color:#fff;
+	line-height:17px
+}
+.radios input[type="radio"]:disabled + span,
+.checkboxes input[type="checkbox"]:disabled + span {
+	opacity:.4;
+	cursor:default
+}
+.checkboxes input[type="checkbox"] + span::before {
+	border-radius:0
+}
+.radios input[type="radio"]:checked + span::before {
+	content:"\2022";
+	font-size:24px
+}
+.checkboxes li{
+	list-style: none;
+}
+
+.inline .checkbox {
+    margin: 0 15px 0 0;
+    padding: 0 0 0 0;
+}

@@ -1,0 +1,111 @@
+
+
+
+//----------------------------------------------------------
+@import "icons-modifiers-list";
+@import "text-strokes";
+//----------------------------------------------------------
+
+
+
+[class*="icon-mod--"]:after,
+[class*="icon-action"]:after,
+[class*="icon-doctype"]:after{
+	position: absolute;
+	font-family:"icons";
+	font-weight:normal;
+	font-style:normal;
+	text-decoration:inherit;
+	display: inline-block;
+}
+.icon__12[class*="icon-mod--"]:after{
+	margin: 8px 0 0 -4px;
+	font-size: 8px;
+	line-height: 8px;
+	.text_stroke_thin;
+}
+.icon__16[class*="icon-mod--"]:after{
+	margin: 7px 0 0 -9px;
+	font-size: 10px;
+	line-height: 10px;
+	width: 10px;
+	height: 10px;
+	.text_stroke_thin;
+}
+.icon__24[class*="icon-mod--"]:after{
+	margin: 14px 0 0 -7px;
+	font-size: 14px;
+	line-height: 14px;
+	.text_stroke_thin;
+}
+.icon__32[class*="icon-mod--"]:after{
+	margin: 13px 0 0 -17px;
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	line-height: 20px;
+	.text_stroke_normal;
+}
+.icon__48[class*="icon-mod--"]:after{
+	margin: -24px 0 0 24px;
+	// background-color: red;
+	position: relative;
+	text-align: right;
+	font-size: 28px;
+	line-height: 28px;
+	width: 28px;
+	height: 28px;
+	.text_stroke_bold;
+}
+/* Actions =============================================*/
+[class*="icon-action"]{
+	color: #0096d6
+}
+.icon__16[class*="icon-action"]:after{
+	margin: 3px 0 0 -14px;
+	font-size: 10px;
+	line-height: 10px;
+	width: 10px;
+	height: 10px;
+	.text_stroke_thin;
+}
+.icon__32[class*="icon-action"]:after{
+	margin: 8px 0 0 -27px;
+	font-size: 16px;
+	line-height: 16px;
+	.text_stroke_normal;
+}
+
+.icon__48[class*="icon-action"]:after{
+	margin: 14px 0 0 -40px;
+	font-size: 24px;
+	line-height: 24px;
+	.text_stroke_bold;
+}
+
+/* Doc docTypes ==========================================*/
+[class*="icon-doctype"]:after{
+	text-align: left;
+	vertical-align: text-bottom;
+}
+
+.icon__32[class*="icon-doctype"]:after{
+	margin: 12px 0 0 -27px;
+	font-size: 21px;
+	line-height: 21px;
+	color: #5a5a5a;
+	width: 21px;
+	height: 21px;
+	.text_stroke_normal;
+}
+.icon__48[class*="icon-doctype"]:after{
+	position: relative;
+	text-align: left;
+	margin: -34px 0 0 -16px;
+	font-size: 28px;
+	line-height: 32px;
+	color: #5a5a5a;
+	width: 32px;
+	height: 32px;
+	.text_stroke_bold;
+}

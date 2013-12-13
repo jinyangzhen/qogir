@@ -1,0 +1,74 @@
+<style>
+	.icons{
+		font-size: 16px;
+	}
+	.icons .icons__item:hover i {
+		-webkit-transform:scale(2);
+		-moz-transform:scale(2);
+		-ms-transform:scale(2);
+		-o-transform:scale(2);
+		transform:scale(2);
+	}
+	.icons {
+		-webkit-column-count:5;
+		-moz-column-count:5;
+		column-count:5;
+		-webkit-column-gap:20px;
+		-moz-column-gap:20px;
+		column-gap:20px;
+	}
+	.icons__item,
+	.icons__item i {
+		line-height:2em;
+		cursor:pointer;
+	}
+	.icons__item:hover {
+		color:#800;
+	}
+	.icons__item i {
+		display:inline-block;
+		width:32px;
+		text-align:center;
+	}
+	.icons__item:hover i {
+		-webkit-transform:scale(1.5);
+		-moz-transform:scale(1.5);
+		-ms-transform:scale(1.5);
+		-o-transform:scale(1.5);
+		transform:scale(1.5);
+	}
+	footer {
+		margin-top:2em;
+		font-size:14px;
+		color:#999;
+	}
+</style>
+<h1>icons</h1>
+<div ng-include="'views/icon-list-view.html'" />
+
+<div class="icon-examples">
+	<h1>Examples</h1>
+
+	<h2>sizes</h2>
+	
+	<div>
+		<i class="icon-threat icon-12"/>icon-12
+		<i class="icon-threat"/>Regular
+		<i class="icon-threat icon-large"/>icon-large
+		<i class="icon-threat icon-20"/>icon-20
+		<i class="icon-threat icon-24"/>icon-24
+		<i class="icon-threat icon-32"/>icon-32
+		<i class="icon-threat icon-48"/>icon-48
+	</div>
+	<h2>Colors</h2>
+
+	<div>
+		<i class="icon-threat icon-red icon-32"/>Red
+		<i class="icon-threat icon-blue icon-32"/>Blue
+		<i class="icon-threat icon-gray icon-32"/>Gray
+		<i class="icon-threat icon-disabled icon-32"/>disabled
+	</div>
+
+</div>
+
+

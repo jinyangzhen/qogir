@@ -1,0 +1,102 @@
+input,
+textarea,
+.uneditable-input {
+	width:auto
+}
+input {
+	font-weight:100
+}
+input:focus {
+	color:#1a1a1a
+}
+.control.error input, 
+.control.error select, 
+.control.error textarea,
+.control.error input:focus, 
+.control.error select:focus, 
+.control.error textarea:focus,
+.control.error .checkbox, 
+.control.error .radio {
+	border-color: red;
+	color:red;
+}
+
+select,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"],
+.uneditable-input {
+	margin-bottom:0;
+	padding:2px 4px;
+	height:20px;
+	border-radius:0;
+	box-shadow:none;
+	vertical-align:middle;
+	text-align:left;
+	line-height:20px;
+
+	-webkit-transition: 0s linear all; /* Safari/Chrome */
+	-moz-transition: 0s linear all; /* Firefox */
+	-ms-transition: 0s linear all; /* IE10 */
+	-o-transition: 0s linear all; /* Opera */
+	transition: 0s linear all; /* Future Browsers */
+}
+textarea:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus,
+.uneditable-input:focus {
+	outline:none;
+	box-shadow: none;
+	border-color:@blue;
+}
+
+input:hover{
+	border-color:#767676;
+	-webkit-transition: 0s linear all; /* Safari/Chrome */
+	-moz-transition: 0s linear all; /* Firefox */
+	-ms-transition: 0s linear all; /* IE10 */
+	-o-transition: 0s linear all; /* Opera */
+	transition: 0s linear all; /* Future Browsers */
+	}
+
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+    border-color: #ddd;
+    background-color: #eee;
+    cursor: not-allowed;
+}
+
+select {
+  height: 22px;
+  box-sizing: content-box;
+  -moz-box-sizing:content-box;
+  -webkit-box-sizing:content-box;
+}

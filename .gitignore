@@ -1,0 +1,12 @@
+node_modules
+dist
+.tmp
+.idea
+qogir.iml
+node.log
+.sass-cache
+app/bower_components
+bower.json
+.bowerrc
+.editorconfig
+.travis.yml

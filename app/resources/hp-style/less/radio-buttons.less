@@ -1,0 +1,87 @@
+// .radio-buttons-group .btn-circle.btn
+// {
+// 	height: 16px;
+// 	width:16px;
+// 	padding:0;
+// 	border:1px solid #ccc;
+// 	border-radius: 8px;
+// 	background: none;
+// 	line-height: 0;
+// }
+
+// .btn-circle.btn{
+// 	margin-top:-3px;
+// }
+
+// .radio-button{
+// 	margin-right:20px;
+// }
+
+// .radio-buttons-group .btn-circle.btn.active{
+// 	background-color: @blue;
+	
+// }
+
+
+
+
+
+
+input[type=checkbox]:not(old),
+input[type=radio   ]:not(old){
+  width     : 14px;
+  margin    : 0;
+  padding   : 0;
+  font-size : 14px;
+  opacity   : 0;
+}
+
+input[type=checkbox]:not(old) + label,
+input[type=radio   ]:not(old) + label{
+  display      : inline-block;
+  margin       : 0;
+  line-height  : 16px;
+  &:hover > span{border-color: #767676}
+}
+
+input[type=checkbox]:not(old) + label > span,
+input[type=radio   ]:not(old) + label > span{
+  display          : inline-block;
+  width            : 14px;
+  height           : 14px;
+  margin           : 0 7px 0 0;
+  border           : 1px solid rgb(192,192,192);
+  background       : white;
+  vertical-align   : bottom;
+}
+input[type=radio   ]:not(old) + label > span{
+  border-radius: 8px;
+}
+input[type=checkbox]:not(old):checked + label > span,
+input[type=radio   ]:not(old):checked + label > span{
+
+}
+
+input[type=checkbox]:not(old):checked + label > span:before{
+  content     : '✓';
+  display     : block;
+  width       : 1px;
+  color       : rgb(153,204,102);
+  font-size   : 14px;
+  line-height : 16px;
+  text-align  : center;
+  font-weight : bold;
+}
+
+input[type=radio]:not(old):checked +  label > span > span{
+  display          : block;
+  width            : 10px;
+  height           : 10px;
+  margin           : 2px;
+  border           : 0px solid rgb(115,153,77);
+  background       : @blue;
+  border-radius: 5px;
+  
+}
+
+.btn-radio-group-vertical .input[type=radio] + label{margin:10px 0;}
