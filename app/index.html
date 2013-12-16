@@ -21,7 +21,7 @@
 
     <!-- endbuild -->
 </head>
-<body ng-app="qogirApp">
+<body ng-app="main">
 <!--[if lt IE 7]>
 <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
     your browser</a> to improve your experience.</p>
@@ -42,6 +42,8 @@
 <script src="lib/angular/dev/angular-cookies.js"></script>
 <script src="lib/angular/dev/angular-sanitize.js"></script>
 <script src="lib/angular/dev/angular-route.js"></script>
+<script src="lib/angular/dev/angular-animate.js"></script>
+<script src="lib/angular/dev/angular-cache.js"></script>
 
 <script src="lib/jquery/dev/jquery.js"></script>
 <script src="lib/underscore/dev/underscore.js"></script>
@@ -57,8 +59,10 @@
 <!-- endbuild -->
 
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
-<script src="scripts/app.js"></script>
-<script src="scripts/controllers/main.js"></script>
+<script src="scripts/modules/main/main.js"></script>
+<script src="scripts/modules/main/controllers/main-ctrl.js"></script>
+<script src="scripts/modules/qogir/qogir.js"></script>
+<script src="scripts/modules/qogir/controllers/qogir-main-ctrl.js"></script>
 <!-- endbuild -->
 </body>
 </html>
