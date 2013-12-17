@@ -72,14 +72,8 @@ server.get(/\/(?:js|resources|lib)+/, function (req, res) {
     res.send(404);
 });
 
-//any file should return index.html to allow the page to render.
-server.get(/^\/$/, function (req, res) {
+server.get(/\/*/, function (req, res) {
     res.sendfile('index.html', {root: fullDir});
-});
-
-server.get('/*', function (req, res) {
-    logger.warn('not found resource');
-    res.send(404);
 });
 
 var mockPort = argv.mockPort;
