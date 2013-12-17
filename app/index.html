@@ -21,7 +21,7 @@
 
     <!-- endbuild -->
 </head>
-<body ng-app="main">
+<body ng-app="chat">
 <!--[if lt IE 7]>
 <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
     your browser</a> to improve your experience.</p>
@@ -33,7 +33,19 @@
 <![endif]-->
 
 <!-- Add your site or application content here -->
-<div class="container" ng-view=""></div>
+<div ui-view class="container"></div>
+
+<!-- only for debug, to remove for production -->
+<div>
+    <pre>
+      <!-- Here's some values to keep an eye on and to understand $state and $stateParams -->
+      $state = {{$state.current.name}}
+      $stateParams = {{$stateParams}}
+      $state full url = {{ $state.$current.url.source }}
+      <!-- $state.$current is not a public api, we are using it to
+           display the full url for learning purposes-->
+    </pre>
+</div>
 
 <script src="lib/angular/dev/angular.js"></script>
 
@@ -61,8 +73,9 @@
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
 <script src="scripts/modules/main/main.js"></script>
 <script src="scripts/modules/main/controllers/main-ctrl.js"></script>
-<script src="scripts/modules/qogir/qogir.js"></script>
-<script src="scripts/modules/qogir/controllers/qogir-main-ctrl.js"></script>
+<script src="scripts/modules/main/providers/css-prdr.js"></script>
+<script src="scripts/modules/chat/chat.js"></script>
+<script src="scripts/modules/chat/controllers/chat-main-ctrl.js"></script>
 <!-- endbuild -->
 </body>
 </html>

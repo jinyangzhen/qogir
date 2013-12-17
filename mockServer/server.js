@@ -77,7 +77,6 @@ server.get(/^\/$/, function (req, res) {
     res.sendfile('index.html', {root: fullDir});
 });
 
-//any file should return index.html to allow the page to render.
 server.get('/*', function (req, res) {
     logger.warn('not found resource');
     res.send(404);
