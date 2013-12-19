@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="span3"></div>
+    <div class="span6">
+        <div class="row">
+            <h1>'Allo, 'Allo!</h1>
+        </div>
+        <div class="row">
+            <p class="lead">
+                <img src="images/yeoman.png" alt="I'm Yeoman"><br>
+                Always a pleasure to talk.
+            </p>
+        </div>
+        <div class="row">
+            <input type="text" ng-model="model.jid" placeholder="jabber id">
+        </div>
+        <div class="row">
+            <input type="password" ng-model="model.password" placeholder="password">
+        </div>
+        <div class="row">
+            <div class="checkboxes">
+                <label>
+                    <input type="checkbox">
+                    <span>Remember me</span>
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <button class="btn min-width btn-primary" type="button" ng-click="login()">Connect</button>
+        </div>
+        <div>
+            <p>{{status()}}</p>
+        </div>
+    </div>
+    <div class="span3"></div>
+</div>

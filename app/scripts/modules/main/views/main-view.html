@@ -1,0 +1,22 @@
+<div class="navbar navbar-fixed-top navbar-inline">
+    <div class="container">
+        <a class="brand">HP K2</a>
+        <div class="nav-collapse collapse">
+            <ul class="nav">
+                <li class="active"><a href="">Home</a></li>
+                <li><a ui-sref="home.ui-kit">Ui-kit</a></li>
+                <li><a ui-sref="home.icon-kit">Icon-kit</a></li>
+                <li><a ui-sref="home.login">Login</a></li>
+                <li><a ui-sref="home.chat">Chat</a></li>
+            </ul>
+        </div>
+        <div class="presence"><span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'">{{user.jid}}</span></div>
+    </div>
+</div>
+
+<div ui-view class="container"></div>
+
+<div class="footer">
+    <div class="divider-h"></div>
+    <p style="text-align: right">&#0169 Copyright 2013 Hewlett-Packard Development Company, L.P. </p>
+</div>

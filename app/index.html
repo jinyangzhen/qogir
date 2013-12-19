@@ -18,6 +18,8 @@
     <!-- build:css({.tmp,app}) styles/main.css -->
     <link rel="stylesheet" href="resources/css/third-party.css"/>
     <link rel="stylesheet" href="resources/css/theme.css"/>
+    <link rel="stylesheet" href="scripts/modules/chat/resources/css/theme.css"/>
+    <link rel="stylesheet" href="scripts/modules/main/resources/css/theme.css"/>
 
     <!-- endbuild -->
 </head>
@@ -44,6 +46,7 @@
       $state full url = {{ $state.$current.url.source }}
       <!-- $state.$current is not a public api, we are using it to
            display the full url for learning purposes-->
+        {{currentError}}
     </pre>
 </div>
 
@@ -73,9 +76,12 @@
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
 <script src="scripts/modules/main/main.js"></script>
 <script src="scripts/modules/main/controllers/main-ctrl.js"></script>
-<script src="scripts/modules/main/providers/css-prdr.js"></script>
+<script src="scripts/modules/main/services/exception-svc.js"></script>
 <script src="scripts/modules/chat/chat.js"></script>
 <script src="scripts/modules/chat/controllers/chat-main-ctrl.js"></script>
+<script src="scripts/modules/chat/controllers/login-ctrl.js"></script>
+<script src="scripts/modules/chat/services/xmpp-svc.js"></script>
+
 <!-- endbuild -->
 </body>
 </html>

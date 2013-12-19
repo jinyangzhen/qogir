@@ -1,9 +1,7 @@
 'use strict';
 
-angular.module('main').controller('MainCtrl', function ($scope) {
-    $scope.awesomeThings = [
-        'HTML5 Boilerplate',
-        'AngularJS',
-        'Karma'
-    ];
+angular.module('main').controller('MainCtrl', function ($scope, $state, exceptionObj) {
+    $scope.user = {};
+    $scope.currentError = exceptionObj.error;
+    $state.go('home.chat');
 });
