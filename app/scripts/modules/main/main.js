@@ -20,6 +20,8 @@ angular.module('main', ['ngCookies', 'ngResource', 'ngSanitize', 'ngAnimate', 'u
             }).state('home.icon-kit', {
                 url: 'icon-kit',
                 templateUrl: modulePath + '/views/icons-view.html'
+            }).state('home.configuration',{
+
             });
 
         $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);

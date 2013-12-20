@@ -1,0 +1,13 @@
+<div >
+    <div class="modal-header">
+         K2 Configuration
+    </div>
+    <div class="modal-body">
+        <span class="configLabel">BOSH server </span>
+        <input class="configInput" type="text" ng-model="config.boshEndpoint" placeholder="e.g. http://ip:port/http-bind/">
+    </div>
+    <div class="modal-footer">
+        <button class="btn min-width btn-primary" type="button" ng-click="proceedToSave()">Apply</button>
+        <button class="btn min-width" type="button" ng-click="proceedToCancel()">Cancel</button>
+    </div>
+</div>

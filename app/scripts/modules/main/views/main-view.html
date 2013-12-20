@@ -10,11 +10,12 @@
                 <li><a ui-sref="home.chat">Chat</a></li>
             </ul>
         </div>
-        <div class="presence"><span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'">{{user.jid}}</span></div>
+        <div class="presence"><span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'"></span><p>{{user.jid}}</p></div>
+        <div class="configuration" ng-click="openConfigDialog()"><span class="icon-configuration icon-24 icon-blue"></span></div>
     </div>
 </div>
 
-<div ui-view class="container"></div>
+<div ui-view class="container"></div> <!-- major partial views landing to -->
 
 <div class="footer">
     <div class="divider-h"></div>

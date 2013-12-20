@@ -65,4 +65,8 @@ angular.module('chat').service('XmppService', function ($log, $q) {
         return  jabberId;
     }
 
+    this.setBoshServiceEndpoint = function (endpoint){
+        BOSH_SERVICE = endpoint;
+    }
+
 });
