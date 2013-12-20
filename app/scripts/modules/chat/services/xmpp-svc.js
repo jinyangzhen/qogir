@@ -1,7 +1,7 @@
-angular.module('chat').service('XmppService', function ($log, $q) {
+angular.module('chat').service('XmppService', function ($log, $q, PersistenceService) {
     'use strict';
 
-    var BOSH_SERVICE = 'http://192.168.1.102:7070/http-bind/',
+    var BOSH_SERVICE = PersistenceService.getItem('bosh_service')||'http://localhost:7070/http-bind/',
         connection = new Strophe.Connection(BOSH_SERVICE),
         connectionStatus = Strophe.Status.DISCONNECTED,
         jabberId = null,
@@ -65,8 +65,9 @@ angular.module('chat').service('XmppService', function ($log, $q) {
         return  jabberId;
     }
 
-    this.setBoshServiceEndpoint = function (endpoint){
+    this.resetBoshEndpoint = function (endpoint){
         BOSH_SERVICE = endpoint;
+        connection = new Strophe.Connection(BOSH_SERVICE);
     }
 
 });

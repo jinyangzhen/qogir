@@ -5,7 +5,7 @@ angular.module('chat').controller('LoginCtrl', function ($scope, $state, $log, P
     $scope.model = {};
 
     $scope.callbacks.onChangeConfig = function () {
-        XmppService.setBoshServiceEndpoint(PersistenceService.getItem('bosh_service'));
+        XmppService.resetBoshEndpoint(PersistenceService.getItem('bosh_service'));
     };
 
 

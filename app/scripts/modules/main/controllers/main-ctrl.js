@@ -4,12 +4,11 @@ angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, 
     var configModalInstance;
 
     $scope.user = {};
-    $scope.config ={};
-    $scope.currentError = exceptionObj.error;
+    $scope.config = {};
+    $scope.error = { current: exceptionObj.error};
     $scope.callbacks = {
         onChangeConfig: angular.noop   // to be overridden by interested nested controller
     };
-
 
 
     $scope.openConfigDialog = function () {

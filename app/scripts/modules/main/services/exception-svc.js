@@ -4,6 +4,8 @@ angular.module('main').value('exceptionObj', {error:''}).factory('$exceptionHand
         //override default exception handler
         exception.message += ' (caused by "' + cause + '")';
         $log.error(exception);
+
+        //TODO
         exceptionObj.error = exception.message;
     };
 });

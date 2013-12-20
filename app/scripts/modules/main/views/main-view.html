@@ -1,6 +1,7 @@
 <div class="navbar navbar-fixed-top navbar-inline">
     <div class="container">
         <a class="brand">HP K2</a>
+
         <div class="nav-collapse collapse">
             <ul class="nav">
                 <li class="active"><a href="">Home</a></li>
@@ -10,8 +11,13 @@
                 <li><a ui-sref="home.chat">Chat</a></li>
             </ul>
         </div>
-        <div class="presence"><span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'"></span><p>{{user.jid}}</p></div>
-        <div class="configuration" ng-click="openConfigDialog()"><span class="icon-configuration icon-24 icon-blue"></span></div>
+        <div class="presence">
+            <span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'"></span>
+            <span>{{user.jid}}</span>
+        </div>
+        <div class="configuration" ng-click="openConfigDialog()">
+            <span class="icon-configuration icon-24 icon-blue"></span>
+        </div>
     </div>
 </div>
 
