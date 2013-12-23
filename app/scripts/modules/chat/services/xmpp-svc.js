@@ -34,6 +34,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
             if (connectionStatus === Strophe.Status.CONNECTED) {
                 jabberId = jid;
                 password = pass;
+                connection.send ($pres()); //send presence for listening on incoming msg
                 deferred.resolve(condition);
             }
             else if (connectionStatus === Strophe.Status.CONNECTING) {
@@ -63,11 +64,21 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
 
     this.getUser = function () {
         return  jabberId;
-    }
+    };
 
     this.resetBoshEndpoint = function (endpoint){
         BOSH_SERVICE = endpoint;
         connection = new Strophe.Connection(BOSH_SERVICE);
-    }
+    };
+
+    this.sendMessage = function (jid, msg){
+        var message = $msg({to: jid, 'type':'chat'}).c('body').t(msg).up().c('active', {xmlns:'http://jabber.org/protocol/chatstates'});
+        connection.send (message);
+    };
+
+
+    this.registerChatHandler = function (callback){
+        connection.addHandler(callback, null, 'message', 'chat');
+    };
 
 });

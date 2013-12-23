@@ -9,32 +9,24 @@
 </div>
 <div class="row">
     <div class="span8">
-        <div class="row ">
-            <div class="pane bordered">
-                <div class="pane-body">
-                    <div class="pane-content">
-                        <p>Roger: Lunch?</p>
-                        <p>Wilson: go !!!</p>
-                    </div>
-                </div>
-            </div>
+        <div ng-show="chat.currentSession" id="msgDisplay" class="row well">
+            <div class="chat-message" ng-repeat="item in chat.currentSession.history track by item.timestamp"><p>{{item.message}}</p></div>
         </div>
-        <div class="row">
-            <textarea id="chatInput" rows="4" placeholder="Enter your message"> </textarea>
-            <button id="sendBtn" class="btn min-width btn-primary" type="button">Send</button>
+        <div ng-show="chat.currentSession"  id="msgInput" class="row">
+            <textarea id="chatInput" rows="4" ng-model="chat.currentSession.inputMessage" placeholder="Enter your message"> </textarea>
+            <button id="sendBtn" class="btn min-width btn-primary" type="button" ng-click="send()">Send</button>
         </div>
     </div>
 
-    <div class="span4">
-        <div class="component">
-            <p class="component-lable">Session list</p>
+    <div id="session" class="span3">
+        <div id="sessionToolbar" class="row tool-bar">
+            <a class="btn btn-icon" ng-click="openChatWithDialog()"><i class="icon-chat-comment"></i> Chat With </a>
+        </div>
+        <div id="sessionList" class="row">
             <ul class="nav nav-list">
-                <li><a href="">Tom</a></li>
-                <li><a href="">Jerry</a></li>
-                <li class="active"><a href="">Amy</a></li>
-                <li><a href="">Wilson</a></li>
-                <li><a href="">Jason</a></li>
-                <li><a href="">TK</a></li>
+                <li ng-class ="session.jid==chat.currentSession.jid ? 'active':''" ng-repeat ="session in chat.sessions">
+                    <a href="" ng-click="moveTo(session)">{{session.jid}}</a>
+                </li>
             </ul>
         </div>
     </div>

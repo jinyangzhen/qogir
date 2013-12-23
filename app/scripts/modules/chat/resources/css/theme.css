@@ -8,3 +8,31 @@
 .loginInput {
   width: 300px;
 }
+#session {
+  border-left: 1px solid #ccc;
+  height: 400px;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+#sessionToolbar {
+  margin-top: 0px;
+  margin-left: 5px;
+}
+#sessionList {
+  margin-top: 5px;
+  margin-left: 0px;
+}
+#msgDisplay {
+  margin-top: 0px;
+  height: 300px;
+  overflow: auto;
+}
+#msgInput {
+  margin-top: 0px;
+}
+#chatWithLabel {
+  margin-right: 20px;
+}
+#chatWithInput {
+  width: 250px;
+}
