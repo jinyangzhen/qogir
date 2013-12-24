@@ -2,11 +2,11 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
     'use strict';
 
     var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
-        connection = new Strophe.Connection(BOSH_SERVICE),
+        connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
         jabberId = null,
         password = null,
-        _DEBUG = false,
+    //_DEBUG = false,
         statusTxt = {};
 
     statusTxt[Strophe.Status.CONNECTING] = 'Connecting';
@@ -15,19 +15,20 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
     statusTxt[Strophe.Status.DISCONNECTED] = 'Disconnected';
     statusTxt[Strophe.Status.DISCONNECTING] = 'Disconnecting';
 
-    connection.rawInput = function (data) {
-        if (_DEBUG) {
-            $log.debug('RECV: ' + data);
-        }
-    };
-    connection.rawOutput = function (data) {
-        if (_DEBUG) {
-            $log.debug('SEND: ' + data);
-        }
-    };
+    /*    connection.rawInput = function (data) {
+     if (_DEBUG) {
+     $log.debug('RECV: ' + data);
+     }
+     };
+     connection.rawOutput = function (data) {
+     if (_DEBUG) {
+     $log.debug('SEND: ' + data);
+     }
+     };*/
 
     this.connect = function (jid, pass) {
         var deferred = $q.defer();
+        connection = new Strophe.Connection(BOSH_SERVICE);
         connection.connect(jid, pass, function (status, condition) {
             connectionStatus = status;
 
@@ -43,7 +44,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
             else if (connectionStatus === Strophe.Status.AUTHENTICATING) {
                 $log.info('Authenticating...');
             }
-            else if  (connectionStatus === Strophe.Status.AUTHFAIL){
+            else if (connectionStatus === Strophe.Status.AUTHFAIL) {
                 deferred.reject('Auth failed');
             }
             else {
@@ -55,6 +56,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
 
     this.disconnect = function () {
         connection.disconnect();
+        connection = null;
     };
 
     this.isConnected = function () {
@@ -71,6 +73,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
 
     this.resetBoshEndpoint = function (endpoint) {
         BOSH_SERVICE = endpoint;
+        connection.disconnect();
         connection = new Strophe.Connection(BOSH_SERVICE);
     };
 

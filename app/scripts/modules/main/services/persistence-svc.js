@@ -9,7 +9,7 @@ angular.module('main').service('PersistenceService', function () {
      * @param value
      */
     this.setItem = function (key, value) {
-        localStorage.setItem(key, value);
+        localStorage.setItem(key, JSON.stringify(value));
     };
 
     /**
@@ -19,7 +19,11 @@ angular.module('main').service('PersistenceService', function () {
      */
     this.getItem = function (key) {
         var value = localStorage.getItem(key);
-        return  value === 'undefined' ? undefined : value;  //chrome would return 'undefined' string for non-exist item.
+        return  value === 'undefined' ? undefined : JSON.parse(value);  //chrome would return 'undefined' string for non-exist item.
     };
+
+    this.removeItem = function (key) {
+        localStorage.removeItem(key);
+    }
 
 });

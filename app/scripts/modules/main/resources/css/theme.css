@@ -1,13 +1,11 @@
-.presence {
-  float: left;
-  padding-top: 15px;
-  margin-left: 100px;
-}
-.configuration {
+.head-icon {
   float: left;
   padding-top: 15px;
   margin-left: 20px;
   cursor: pointer;
+}
+#spaceHolder {
+  margin-left: 280px;
 }
 .configInput {
   width: 350px;

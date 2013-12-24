@@ -4,24 +4,26 @@
 
         <div class="nav-collapse collapse">
             <ul class="nav">
-                <li class="active"><a href="">Home</a></li>
-                <li><a ui-sref="home.ui-kit">Ui-kit</a></li>
-                <li><a ui-sref="home.icon-kit">Icon-kit</a></li>
-                <li><a ui-sref="home.login">Login</a></li>
-                <li><a ui-sref="home.chat">Chat</a></li>
+                <li ng-class="{'active':$state.current.name=='home'}"><a ui-sref="home">Home</a></li>
+                <li ng-class="{'active':$state.current.name=='home.chat'}"><a ui-sref="home.chat">Chat</a></li>
             </ul>
         </div>
-        <div class="presence">
-            <span class="icon-user icon-24" ng-class="user.jid?'icon-blue':'icon-gray'"></span>
-            <span>{{user.jid}}</span>
+        <div id="spaceHolder" class="head-icon">
+            <span class="icon-user icon-24" ng-class="getCurrentUser()?'icon-blue':'icon-gray'"></span>
+            <span>{{getCurrentUser()}}</span>
         </div>
-        <div class="configuration" ng-click="openConfigDialog()">
+        <div class="head-icon" ng-click="openConfigDialog()">
             <span class="icon-gears icon-24 icon-blue"></span>
+        </div>
+        <div class="head-icon" ng-click="quit()">
+            <span class="icon-export icon-24" ng-class="getCurrentUser()?'icon-blue':'icon-gray'"></span>
         </div>
     </div>
 </div>
 
-<div ui-view class="container"></div> <!-- major partial views landing to -->
+<div ui-view class="container">  <!-- major partial views landing to -->
+    <h1 style="margin-top: 150px; text-align: center">A Web Chat PoC powered by AngularJS, StropheJS and Openfire</h1>
+</div>
 
 <div class="footer">
     <div class="divider-h"></div>

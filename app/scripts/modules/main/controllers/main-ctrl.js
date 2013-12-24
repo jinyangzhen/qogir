@@ -1,15 +1,13 @@
 'use strict';
 
-angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, exceptionObj, PersistenceService) {
+angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, exceptionObj, PersistenceService, UserService) {
     var configModalInstance;
 
-    $scope.user = {};
     $scope.config = {};
     $scope.error = { current: exceptionObj.error};
     $scope.callbacks = {
         onChangeConfig: angular.noop   // to be overridden by interested nested controller
     };
-
 
     $scope.openConfigDialog = function () {
         //
@@ -35,6 +33,14 @@ angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, 
         configModalInstance.dismiss('cancel');
     };
 
+    $scope.quit = function (){
+        UserService.logout();
+        $state.go('home.login');
+    };
+
+    $scope.getCurrentUser = function (){
+        return UserService.getCurrentUser();
+    };
 
     $state.go('home.chat');
 });

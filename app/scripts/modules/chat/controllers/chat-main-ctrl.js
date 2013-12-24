@@ -10,8 +10,6 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     }
 
     $scope.connectionStatus = XmppService.getCurrentStatus();
-    $scope.user.jid = XmppService.getUser();
-
 
     function createNewSession(jid, message /*optional*/) {
         var newSession = {
@@ -32,6 +30,14 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
 
     function addChatEntry(session, jid, message) {
         session.history.push({ userId: jid.split('@')[0], timestamp: Date.now(), message: message});
+    }
+
+    function scrollMessageDisplay() {
+        //TODO move out dom population from controller
+        $timeout(function () {
+            var div = $('#msgDisplay').get(0);
+            div.scrollTop = div.scrollHeight;
+        });
     }
 
     function onReceiveMessage(message) {
@@ -86,8 +92,8 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
             }
         }
 
-        $timeout(angular.noop);  //calling $scope.apply() within the frame causing the handler fail to execute, move to next frame
-
+        $timeout(scrollMessageDisplay);  //directly calling $scope.apply() within the frame causing the handler fail to execute,
+        // move to next frame
         return true;  //keep on react instead of once
     }
 
@@ -132,24 +138,14 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
         );
 
         $scope.chat.currentSession.inputMessage = '';
-
-        //TODO move out dom population from controller
-        $timeout(function () {
-            var div = $('#msgDisplay').get(0);
-            div.scrollTop = div.scrollHeight;
-        });
+        scrollMessageDisplay();
     };
 
-
-    $scope.isCounterpartId = function (userId){
-        if ($scope.chat.currentSession.counterpart.indexOf(userId) === 0) {
-            return true;
-        }
-
-        return false;
+    $scope.isCounterpartId = function (userId) {
+        return $scope.chat.currentSession.counterpart.indexOf(userId) === 0;
     };
 
-    $scope.$on('$destroy', XmppService.disconnect);
-    $window.onbeforeunload =  XmppService.disconnect;
+    $scope.callbacks.onQuit = XmppService.disconnect;
+    $window.onbeforeunload = XmppService.disconnect;
 
 });

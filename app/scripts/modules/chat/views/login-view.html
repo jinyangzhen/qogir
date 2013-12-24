@@ -23,7 +23,7 @@
         <div class="row">
             <div class="checkboxes">
                 <label>
-                    <input type="checkbox">
+                    <input type="checkbox" ng-model="model.rememberMe">
                     <span>Remember me</span>
                 </label>
             </div>
@@ -32,7 +32,7 @@
             <button class="btn min-width btn-primary" type="button" ng-click="login()">Connect</button>
         </div>
         <div>
-            <p>{{status()}}</p>
+            <span>{{status()}}</span>
         </div>
     </div>
     <div class="span3"></div>
