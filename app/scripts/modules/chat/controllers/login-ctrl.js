@@ -8,13 +8,14 @@ angular.module('chat').controller('LoginCtrl', function ($scope, $state, $log, P
         XmppService.resetBoshEndpoint(PersistenceService.getItem('bosh_service'));
     };
 
-
     $scope.login = function () {
         XmppService.connect($scope.model.jid, $scope.model.password).then(function () {
                 $state.go('home.chat');
             },
-            function () {
-                $log.error('fail to connect');
+            function (error) {
+                XmppService.disconnect(); //terminate the unused session if any
+                $log.error('fail to connect cos '+ error);
+                $scope.model.connectionErr = error;
             }
         );
     };

@@ -36,3 +36,9 @@
 #chatWithInput {
   width: 250px;
 }
+.user-msg {
+  color: #3a87ad;
+}
+.counterpart-msg {
+  color: #468847;
+}

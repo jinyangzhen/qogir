@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, XmppService, $modal, $timeout, $log) {
+angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, XmppService, $modal, $timeout, $log, $window) {
     var chatWithModalInstance;
 
     if (!XmppService.isConnected()) {
@@ -12,6 +12,27 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     $scope.connectionStatus = XmppService.getCurrentStatus();
     $scope.user.jid = XmppService.getUser();
 
+
+    function createNewSession(jid, message /*optional*/) {
+        var newSession = {
+            counterpart: jid,
+            inputMessage: '',
+            history: []
+        };
+
+        if (message) {
+            addChatEntry(newSession, jid, message);
+        }
+
+        //add to chat model
+        $scope.chat.sessions.push(newSession);
+
+        return newSession;
+    }
+
+    function addChatEntry(session, jid, message) {
+        session.history.push({ userId: jid.split('@')[0], timestamp: Date.now(), message: message});
+    }
 
     function onReceiveMessage(message) {
         function extractMessage(message) {
@@ -54,28 +75,21 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
         }
         else {
             for (var i = 0, j = $scope.chat.sessions.length; i < j; i++) {
-                if ($scope.chat.sessions[i].jid === jid) {
+                if ($scope.chat.sessions[i].counterpart === jid) {
                     existingSession = true;
-                    $scope.chat.sessions[i].history.push({ timestamp: Date.now(), message: body});
+                    addChatEntry($scope.chat.sessions[i], jid, body);
                 }
             }
 
             if (!existingSession) {
-                //add a new session
-                $scope.chat.sessions.push({
-                    jid: jid,
-                    inputMessage: '',
-                    history: [
-                        { timestamp: Date.now(), message: body}
-                    ]
-                });
+                createNewSession(jid, body);
             }
         }
 
-        $timeout(angular.noop);
+        $timeout(angular.noop);  //calling $scope.apply() within the frame causing the handler fail to execute, move to next frame
 
-        return true;  //keep on react
-    };
+        return true;  //keep on react instead of once
+    }
 
     XmppService.registerChatHandler(onReceiveMessage);
 
@@ -84,11 +98,11 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
         sessions: [],
         selectedIndex: null,
         currentSession: null,
-        newPeopleName: ''
+        newBuddyName: ''
     };
 
     $scope.openChatWithDialog = function () {
-        $scope.chat.newPeopleName = '';
+        $scope.chat.newBuddyName = '';
         chatWithModalInstance = $modal.open({
             templateUrl: 'scripts/modules/chat/templates/chat-with-dialog-tmpl.html',
             scope: $scope
@@ -96,14 +110,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     };
 
     $scope.proceedToStart = function () {
-        var newSession = {
-            jid: $scope.chat.newPeopleName,
-            inputMessage: '',
-            history: []
-        };
-
-        $scope.chat.sessions.push(newSession);
-        $scope.chat.currentSession = newSession;
+        $scope.chat.currentSession = createNewSession($scope.chat.newBuddyName);
         chatWithModalInstance.dismiss('saved');
     };
 
@@ -116,16 +123,33 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     };
 
     $scope.send = function () {
-        XmppService.sendMessage($scope.chat.currentSession.jid, $scope.chat.currentSession.inputMessage);
-        $scope.chat.currentSession.history.push({ timestamp: Date.now(), message: $scope.chat.currentSession.inputMessage});
+        XmppService.sendMessage($scope.chat.currentSession.counterpart, $scope.chat.currentSession.inputMessage);
+
+        addChatEntry(
+            $scope.chat.currentSession,
+            XmppService.getUser(),
+            $scope.chat.currentSession.inputMessage
+        );
+
         $scope.chat.currentSession.inputMessage = '';
 
-        //TODO move out dom ops from controller
+        //TODO move out dom population from controller
         $timeout(function () {
             var div = $('#msgDisplay').get(0);
             div.scrollTop = div.scrollHeight;
         });
     };
 
+
+    $scope.isCounterpartId = function (userId){
+        if ($scope.chat.currentSession.counterpart.indexOf(userId) === 0) {
+            return true;
+        }
+
+        return false;
+    };
+
+    $scope.$on('$destroy', XmppService.disconnect);
+    $window.onbeforeunload =  XmppService.disconnect;
 
 });

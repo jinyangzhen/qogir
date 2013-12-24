@@ -11,6 +11,10 @@
             </p>
         </div>
         <div class="row">
+            <div ng-show="model.connectionErr" class="alert alert-error">
+                <button data-dismiss="alert" class="close" type="button">×</button>
+                {{model.connectionErr}}
+            </div>
             <input class="loginInput" type="text" ng-model="model.jid" placeholder="jabber id">
         </div>
         <div class="row">
