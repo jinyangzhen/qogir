@@ -1,0 +1,30 @@
+<div class="row">
+    <div class="span8">
+        <div ng-show="chat.currentSession" id="msgDisplay" class="row well">
+            <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
+                 ng-repeat="item in chat.currentSession.history track by item.timestamp">
+                <strong>{{item.userId + '>'}}</strong>
+                <span>{{item.message}}</span>
+            </div>
+        </div>
+        <div ng-show="chat.currentSession" id="msgInput" class="row">
+            <textarea id="chatInput" rows="4" ng-model="chat.currentSession.inputMessage"
+                      placeholder="Enter your message"> </textarea>
+            <button id="sendBtn" class="btn min-width btn-primary" type="button" ng-click="send()">Send</button>
+        </div>
+    </div>
+
+    <div id="session" class="span3">
+        <div id="sessionToolbar" class="row tool-bar">
+            <a class="btn btn-icon" ng-click="openChatWithDialog()"><i class="icon-chat-comment"></i> Chat With </a>
+        </div>
+        <div id="sessionList" class="row">
+            <ul class="nav nav-list">
+                <li ng-class="session.counterpart==chat.currentSession.counterpart ? 'active':''"
+                    ng-repeat="session in chat.sessions">
+                    <a href="" ng-click="moveTo(session)">{{session.counterpart}}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

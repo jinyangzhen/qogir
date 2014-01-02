@@ -7,22 +7,23 @@ angular.module('main', ['ngCookies', 'ngResource', 'ngSanitize', 'ngAnimate', 'u
 
         //$locationProvider.html5Mode(true) // Android Webview (phonegap) seems to only work with hash bang format
 
-        $urlRouterProvider.otherwise('/');
+        $urlRouterProvider.otherwise('/about');
 
         $stateProvider.state('home', {
-            url: '/',
+            url: '',
             templateUrl: modulePath + '/views/main-view.html',
             controller: 'MainCtrl'
         })
+            .state('home.about', {
+                url: '/about'
+            })
             .state('home.ui-kit', {
-                url: 'ui-kit',
+                url: '/ui-kit',
                 templateUrl: modulePath + '/views/ui-kit-view.html'
             }).state('home.icon-kit', {
-                url: 'icon-kit',
+                url: '/icon-kit',
                 templateUrl: modulePath + '/views/icons-view.html'
-            }).state('home.configuration',{
-
-            });
+            })
 
         $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
     })

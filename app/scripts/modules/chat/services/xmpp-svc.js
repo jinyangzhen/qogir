@@ -4,7 +4,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
     var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
         connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
-        jabberId = null,
+        fullJabberId = null,
         password = null,
     //_DEBUG = false,
         statusTxt = {};
@@ -33,7 +33,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
             connectionStatus = status;
 
             if (connectionStatus === Strophe.Status.CONNECTED) {
-                jabberId = jid;
+                fullJabberId = connection.jid; //keep the full id which has resource (session) part
                 password = pass;
                 connection.send($pres()); //send presence for listening on incoming msg
                 deferred.resolve(condition);
@@ -68,7 +68,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
     };
 
     this.getUser = function () {
-        return  jabberId;
+        return  fullJabberId.split('@')[0];
     };
 
     this.resetBoshEndpoint = function (endpoint) {
@@ -85,5 +85,69 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
     this.registerChatHandler = function (callback) {
         connection.addHandler(callback, null, 'message', 'chat');
     };
+
+    /**
+     * check whether Fastpath component available on server end
+     * @returns {*}
+     */
+    this.discoverFastpath = function () {
+        var deferred = $q.defer();
+        connection.sendIQ(
+            $iq({type: "get"})
+                .c("query", {xmlns: "http://jabber.org/protocol/disco#items"}),
+            function (iq) {
+                var fpId, item = $(iq).find('iq > query item[name="Fastpath"][jid^="workgroup"]');
+                if (item.length > 0) {
+                    fpId = item[0].attributes['jid'].value;
+                    deferred.resolve(fpId);
+                    return;
+                }
+
+                deferred.reject('Faskpath component not found');
+            },
+            function (error) {
+                if (error) {
+                    deferred.reject(error);
+                }
+                else {
+                    deferred.reject('time out');
+                }
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     * find back the work groups the component sets up
+     * @param jid
+     * @returns {*}
+     */
+    this.discoverWorkgroup = function (jid) {
+        var deferred = $q.defer();
+        connection.sendIQ(
+            $iq({to: jid, type: "get"})
+                .c("workgroups", {xmlns: "http://jabber.org/protocol/workgroup", jid: fullJabberId}),
+            function (iq) {
+                var i, j, wgName, names = [], workgroups = $(iq).find('iq > workgroups > workgroup[jid]');
+
+                for (i = 0, j = workgroups.length; i < j; i++) {
+                    wgName = workgroups[i].attributes['jid'].value;
+                    names.push(wgName);
+                }
+
+                deferred.resolve(names);
+            },
+            function (error) {
+                if (error) {
+                    deferred.reject(error);
+                }
+                else {
+                    deferred.reject('time out');
+                }
+            });
+
+        return deferred.promise;
+    }
 
 });

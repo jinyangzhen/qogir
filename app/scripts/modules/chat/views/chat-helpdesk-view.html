@@ -1,0 +1,17 @@
+<div class="row" style="height:400px">
+    <div class="span8">
+         <span> I am currently logged in to {{model.extra.currentWorkgroup}}</span>
+    </div>
+    <div class="span3 btn-group">
+        <input id="workgroupSelect" type="datetime" class="btn-input" ng-model="chat.helpdesk.selectedGroup" autocomplete="on">
+        <button data-toggle="dropdown" class="btn dropdown-toggle">
+            <span class="icon-down icon-blue"></span>
+        </button>
+        <ul id="workgroupDropdown"  class="dropdown-menu pull-left">
+            <li ng-repeat = "group in chat.helpdesk.groupList" ng-click="chat.helpdesk.selectedGroup=group"><a href>{{group}}</a></li>
+        </ul>
+    </div>
+    <div class="span1">
+        <button class="btn min-width" type="button">Join</button>
+    </div>
+</div>

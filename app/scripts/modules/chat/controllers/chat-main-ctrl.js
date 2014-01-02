@@ -8,6 +8,10 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
         $state.go('home.login');
         return;
     }
+    else {
+        //go to default tab
+        $state.go('home.chat.session');
+    }
 
     $scope.connectionStatus = XmppService.getCurrentStatus();
 
@@ -99,7 +103,45 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
 
     XmppService.registerChatHandler(onReceiveMessage);
 
-    //define the chat model
+    //define view model
+    $scope.model = {
+        panes: [
+            {
+                head: 'Chat Session',
+                state: 'home.chat.session',
+                icon: 'icon-comments',
+                isActive: function () {
+                    return $state.current.name === 'home.chat.session'
+                }
+            }
+        ]
+    };
+
+    //try to discover the server component supporting help desk feature
+    XmppService.discoverFastpath().then(function (jid) {
+
+        XmppService.discoverWorkgroup(jid).then(function (workgroups) {
+            $scope.model.panes.push({
+                head: ' Help Desk',
+                state: 'home.chat.helpdesk',
+                icon: 'icon-storm',
+                isActive: function () {
+                    return $state.current.name === 'home.chat.helpdesk'
+                }
+            });
+
+            $scope.chat.helpdesk = {
+                selectedGroup: null,
+                fastPathId: jid,
+                groupList: workgroups
+            }
+        });
+
+
+    });
+
+
+    //define the domain model
     $scope.chat = {
         sessions: [],
         selectedIndex: null,

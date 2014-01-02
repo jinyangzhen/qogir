@@ -36,6 +36,12 @@
 #chatWithInput {
   width: 250px;
 }
+#workgroupSelect {
+  width: 97%;
+}
+#workgroupDropdown {
+  width: 100%;
+}
 .user-msg {
   color: #3a87ad;
   font-size: 16px;
@@ -43,4 +49,7 @@
 .counterpart-msg {
   color: #468847;
   font-size: 16px;
+}
+.chat-tab {
+  text-decoration: none !important ;
 }
