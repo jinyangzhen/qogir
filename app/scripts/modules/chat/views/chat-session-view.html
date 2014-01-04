@@ -1,5 +1,6 @@
 <div class="row">
-    <div class="span8">
+    <div class="span1"></div>
+    <div class="span7">
         <div ng-show="chat.currentSession" id="msgDisplay" class="row well">
             <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
                  ng-repeat="item in chat.currentSession.history track by item.timestamp">
