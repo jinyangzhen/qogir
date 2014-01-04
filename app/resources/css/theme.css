@@ -4338,9 +4338,10 @@ body {
 .ngRow:hover {
   background-color: #daedf5;
 }
+/*
 .ngVerticalBar {
-  height: 100%;
-}
+  height: 100%; //fix potentially a bug where cell vertical bar doesnt draw completely (when ng-grid works with angularJS 1.2 )
+}*/
 /*hpstyle end*//*@import url(hp-preboot.less);*/
 @media (min-width: 0) and (max-width: 800px) {
   .kit {
