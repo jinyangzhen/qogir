@@ -133,8 +133,9 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
             $scope.chat.helpdesk = {
                 selectedGroup: null,
                 fastPathId: jid,
-                groupList: workgroups
-            }
+                groupList: workgroups,
+                requestQueue: []
+            };
         });
 
 

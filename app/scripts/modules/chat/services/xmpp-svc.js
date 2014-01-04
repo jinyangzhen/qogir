@@ -1,4 +1,4 @@
-angular.module('chat').service('XmppService', function ($log, $q, PersistenceService) {
+angular.module('chat').service('XmppService', function ($log, $q, $timeout, PersistenceService) {
     'use strict';
 
     var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
@@ -6,6 +6,7 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
         connectionStatus = Strophe.Status.DISCONNECTED,
         fullJabberId = null,
         password = null,
+        workgroupPresenceRef,
     //_DEBUG = false,
         statusTxt = {};
 
@@ -148,6 +149,65 @@ angular.module('chat').service('XmppService', function ($log, $q, PersistenceSer
             });
 
         return deferred.promise;
+    };
+
+    /**
+     *
+     * @param group
+     */
+    this.loginWorkgroup = function (group, queue) {
+        //monitor queue updates from any workgroup
+        workgroupPresenceRef = connection.addHandler(
+            function (pres) {
+                var count, queueName, endUsers;
+                $log.debug(pres);
+
+                $timeout(function () {
+                    if (pres.attributes['from'].value.indexOf(group) === 0) {
+
+                        count = $(pres).find(' presence > notify-queue > count').text();
+                        queueName = pres.attributes['from'].value.replace(group + '/', '');
+
+                        if (count) {
+                            //handle the general info for the queue
+                            $log.debug(queueName + ' waiting #' + count);
+                        }
+                        else {
+                            endUsers = $(pres).find(' presence > notify-queue-details > user');
+                            if (endUsers) {
+                                //handle detail info
+                                for (var i = 0, j = endUsers.length; i < j; i++) {
+                                    var jid = endUsers[i].attributes['jid'].value,
+                                        theNode = $(endUsers[i]),
+                                        position = theNode.find('position').text(),
+                                        waiting = theNode.find('time').text(),
+                                        joinTime = theNode.find('join-time').text();
+
+                                    queue.push({
+                                        jid: jid,
+                                        position: position,
+                                        waiting: waiting,
+                                        joinTime: joinTime
+                                    })
+                                }
+                            }
+                        }
+                    }
+                });
+
+                return true;
+
+            }, "http://jabber.org/protocol/workgroup", "presence");
+
+        //login to a specified group
+        connection.send($pres({to: group}).c("agent-status", {xmlns: "http://jabber.org/protocol/workgroup"}));
+        connection.send($pres({to: group}).c("status").t("Online").up().c("priority").t("1"));
+
+    };
+
+    this.logoutWorkgroup = function () {
+        connection.deleteHandler(workgroupPresenceRef);
     }
 
-});
+})
+;

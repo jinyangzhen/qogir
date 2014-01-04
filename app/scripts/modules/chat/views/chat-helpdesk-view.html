@@ -1,17 +1,22 @@
-<div class="row" style="height:400px">
+<div class="row">
     <div class="span8">
-         <span> I am currently logged in to {{model.extra.currentWorkgroup}}</span>
+        <span> I am currently logged in to {{chat.helpdesk.selectedGroup}}</span>
     </div>
     <div class="span3 btn-group">
-        <input id="workgroupSelect" type="datetime" class="btn-input" ng-model="chat.helpdesk.selectedGroup" autocomplete="on">
+        <input id="workgroupSelect" type="datetime" class="btn-input" ng-model="chat.helpdesk.selectedGroup"
+               placeholder="Please select a workgroup">
         <button data-toggle="dropdown" class="btn dropdown-toggle">
             <span class="icon-down icon-blue"></span>
         </button>
-        <ul id="workgroupDropdown"  class="dropdown-menu pull-left">
-            <li ng-repeat = "group in chat.helpdesk.groupList" ng-click="chat.helpdesk.selectedGroup=group"><a href>{{group}}</a></li>
+        <ul id="workgroupDropdown" class="dropdown-menu pull-left">
+            <li ng-repeat="group in chat.helpdesk.groupList" ng-click="chat.helpdesk.selectedGroup=group"><a href>{{group}}</a>
+            </li>
         </ul>
     </div>
     <div class="span1">
-        <button class="btn min-width" type="button">Join</button>
+        <button class="btn min-width" type="button" ng-click="joinGroup(chat.helpdesk.selectedGroup)">Join</button>
     </div>
+</div>
+<div class="row">
+    <div class="span12" id="queueGrid" ng-grid="queueGridOptions"></div>
 </div>

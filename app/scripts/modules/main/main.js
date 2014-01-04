@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('main', ['ngCookies', 'ngResource', 'ngSanitize', 'ngAnimate', 'ui.router', 'angular-cache', 'ui.bootstrap', 'ui.utils' ])
+angular.module('main', ['ngCookies', 'ngResource', 'ngSanitize', 'ngAnimate', 'ui.router', 'angular-cache', 'ui.bootstrap', 'ui.utils', 'ngGrid' ])
     .config(function ($stateProvider, $urlRouterProvider, $locationProvider, $compileProvider) {
 
         var modulePath = 'scripts/modules/main';

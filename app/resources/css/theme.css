@@ -4329,6 +4329,18 @@ body {
   height: 32px;
   text-shadow: -3px 0px #ffffff, 3px 0px #ffffff, -1.5px -1.5px #ffffff, 1.5px -1.5px #ffffff, -1.5px 1.5px #ffffff, 1.5px 1.5px #ffffff, 0 -3px #ffffff, 0 3px #ffffff, -2.5px 1px #ffffff, 2.5px 1px #ffffff, -2.5px -1px #ffffff, 1px -2.5px #ffffff, 1px 2.5px #ffffff, -1px -2.5px #ffffff, 2.5px -1px #ffffff, -1px 2.5px #ffffff;
 }
+.ngRow.odd {
+  background-color: transparent;
+}
+.ngRow.even {
+  background-color: transparent;
+}
+.ngRow:hover {
+  background-color: #daedf5;
+}
+.ngVerticalBar {
+  height: 100%;
+}
 /*hpstyle end*//*@import url(hp-preboot.less);*/
 @media (min-width: 0) and (max-width: 800px) {
   .kit {
