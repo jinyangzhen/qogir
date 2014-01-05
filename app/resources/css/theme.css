@@ -1113,7 +1113,8 @@ h3 {
 .btn-input {
   width: 70px;
   color: #d7410c;
-  font-style: italic;
+  /*font-style:italic;*/
+
   cursor: text;
 }
 .btn {

@@ -151,53 +151,56 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         return deferred.promise;
     };
 
+
     /**
      *
      * @param group
      */
-    this.loginWorkgroup = function (group, queue) {
-        //monitor queue updates from any workgroup
-        workgroupPresenceRef = connection.addHandler(
-            function (pres) {
-                var count, queueName, endUsers;
-                $log.debug(pres);
+    this.loginWorkgroup = function (group, helpdeskModel) {
+        //monitor queue updates for any workgroup
+        workgroupPresenceRef = connection.addHandler(function presenceHandler(pres) {
+            var count, queueName, endUsers;
+            $log.debug(pres);
 
-                $timeout(function () {
-                    if (pres.attributes['from'].value.indexOf(group) === 0) {
+            $timeout(function () {
+                if (pres.attributes['from'].value.indexOf(group) === 0) {
 
-                        count = $(pres).find(' presence > notify-queue > count').text();
-                        queueName = pres.attributes['from'].value.replace(group + '/', '');
+                    count = $(pres).find(' presence > notify-queue > count').text();
+                    queueName = pres.attributes['from'].value.replace(group + '/', '');
 
-                        if (count) {
-                            //handle the general info for the queue
-                            $log.debug(queueName + ' waiting #' + count);
-                        }
-                        else {
-                            endUsers = $(pres).find(' presence > notify-queue-details > user');
-                            if (endUsers) {
-                                //handle detail info
-                                for (var i = 0, j = endUsers.length; i < j; i++) {
-                                    var jid = endUsers[i].attributes['jid'].value,
-                                        theNode = $(endUsers[i]),
-                                        position = theNode.find('position').text(),
-                                        waiting = theNode.find('time').text(),
-                                        joinTime = theNode.find('join-time').text();
+                    if (count) {
+                        //handle the general info for the queue
+                        helpdeskModel.queue ={};
+                        helpdeskModel.queue.name = queueName;
+                        helpdeskModel.queue.count = count;
+                        helpdeskModel.queue.items =[];
+                    }
+                    else {
+                        endUsers = $(pres).find(' presence > notify-queue-details > user');
+                        if (endUsers) {
+                            helpdeskModel.queue.items.length=0;      // empty existing queue
+                            //handle detail info
+                            for (var i = 0, j = endUsers.length; i < j; i++) {
+                                var jid = endUsers[i].attributes['jid'].value,
+                                    theNode = $(endUsers[i]),
+                                    position = theNode.find('position').text(),
+                                    waiting = theNode.find('time').text(),
+                                    joinTime = theNode.find('join-time').text();
 
-                                    queue.push({
-                                        jid: jid,
-                                        position: position,
-                                        waiting: waiting,
-                                        joinTime: joinTime
-                                    })
-                                }
+                                helpdeskModel.queue.items.push({
+                                    jid: jid,
+                                    position: position,
+                                    waiting: waiting,
+                                    joinTime: joinTime
+                                })
                             }
                         }
                     }
-                });
+                }
+            });
 
-                return true;
-
-            }, "http://jabber.org/protocol/workgroup", "presence");
+            return true;
+        }, "http://jabber.org/protocol/workgroup", "presence");
 
         //login to a specified group
         connection.send($pres({to: group}).c("agent-status", {xmlns: "http://jabber.org/protocol/workgroup"}));
