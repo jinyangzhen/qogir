@@ -7,6 +7,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         fullJabberId = null,
         password = null,
         workgroupPresenceRef,
+        offeringInvitationRef,
     //_DEBUG = false,
         statusTxt = {};
 
@@ -157,7 +158,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param group
      */
     this.loginWorkgroup = function (group, helpdeskModel) {
-        //monitor queue updates for any workgroup
+        //observe queue updates for any workgroup
         workgroupPresenceRef = connection.addHandler(function presenceHandler(pres) {
             var count, queueName, endUsers;
             $log.debug(pres);
@@ -170,15 +171,15 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
                     if (count) {
                         //handle the general info for the queue
-                        helpdeskModel.queue ={};
+                        helpdeskModel.queue = {};
                         helpdeskModel.queue.name = queueName;
                         helpdeskModel.queue.count = count;
-                        helpdeskModel.queue.items =[];
+                        helpdeskModel.queue.items = [];
                     }
                     else {
                         endUsers = $(pres).find(' presence > notify-queue-details > user');
                         if (endUsers) {
-                            helpdeskModel.queue.items.length=0;      // empty existing queue
+                            helpdeskModel.queue.items.length = 0;      //empty existing queue   TODO: this is simple, but it may be worth to change to merge for better model handling
                             //handle detail info
                             for (var i = 0, j = endUsers.length; i < j; i++) {
                                 var jid = endUsers[i].attributes['jid'].value,
@@ -202,6 +203,71 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             return true;
         }, "http://jabber.org/protocol/workgroup", "presence");
 
+        //observe offering and offering revoke events for sent by workgroup
+        offeringInvitationRef = connection.addHandler(function iqHandler(iq) {
+                $log.debug(iq);
+
+                $timeout(function () {
+
+                    //Offering constructor
+                    function Offering(available, timeout /* optional */) {
+                        this.available = available || false;
+                        this.leftTime = timeout;
+                    }
+
+                    Offering.prototype = {
+                        countDown: function () {
+                            var self = this;
+                            self.leftTime--;
+                            if (self.leftTime > 0) {
+                                $timeout(function () {
+                                    self.countDown();
+                                }, 1000);
+                            }
+                        }
+                    };
+
+                    var offering, revoke, theItem, i, j, m, n;
+
+                    if (iq.attributes['from'].value.indexOf(group) === 0) {
+
+                        //check whether it is offer
+                        offering = $(iq).find('iq > offer');
+                        if (offering && offering[0]) {
+                            var offeringJid = offering[0].attributes['jid'].value,
+                                expiredAfter = +$(offering).find('timeout').text();
+                            for (i = 0, j = helpdeskModel.queue.items.length; i < j; i++) {
+                                theItem = helpdeskModel.queue.items[i];
+                                if (theItem.jid === offeringJid) {
+                                    theItem.offering = new Offering(true, expiredAfter);
+                                    theItem.offering.countDown(); //kick off time countdown
+                                }
+                            }
+                        }
+
+                    }
+
+                    //check whether it is offer-revoke
+                    revoke = $(iq).find('iq > offer-revoke');
+                    if (revoke && revoke[0]) {
+                        var revokeJid = revoke[0].attributes['jid'].value,
+                            reason = $(revoke).find('reason').text();
+                        for (m = 0, n = helpdeskModel.queue.items.length; m < n; m++) {
+                            theItem = helpdeskModel.queue.items[m];
+                            if (theItem.jid === revokeJid) {
+                                theItem.offering = new Offering();
+                                theItem.revokeReason = reason;
+                            }
+                        }
+                    }
+                });
+
+                return true;
+            }, "http://jabber.org/protocol/workgroup", "iq"
+        )
+        ;
+
+
         //login to a specified group
         connection.send($pres({to: group}).c("agent-status", {xmlns: "http://jabber.org/protocol/workgroup"}));
         connection.send($pres({to: group}).c("status").t("Online").up().c("priority").t("1"));
@@ -210,6 +276,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
     this.logoutWorkgroup = function () {
         connection.deleteHandler(workgroupPresenceRef);
+        connection.deleteHandler(offeringInvitationRef);
     }
 
 })

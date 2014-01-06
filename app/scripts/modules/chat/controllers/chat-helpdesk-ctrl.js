@@ -1,9 +1,19 @@
 'use strict';
 
-angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, XmppService) {
+angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, XmppService, $log) {
 
-    var actionCellTemplate = '<div style="padding: 4px">&nbsp<span class="label label-success">Accept</span>&nbsp<strong>or</strong>&nbsp' +
-        '<span class="label label-important">Refuse</span>&nbsp<strong> in 20 seconds </strong></div>';
+    var actionCellTemplate = '<div class="fade-in-animation" ng-if="row.getProperty(col.field)" ng-show="showActionPanel(row.getProperty(col.field))" style="padding: 4px">' +
+            '&nbsp<span class="label label-success">Accept</span>&nbsp<strong>or</strong>' +
+            '&nbsp<span class="label label-important">Refuse</span>&nbsp<strong> in {{showLeftTime(row.getProperty(col.field))}} seconds </strong>' +
+            '</div>',
+
+        checkboxCellTemplate = '<div class="ngSelectionCell checkboxes">' +
+            '<label><input tabindex="-1" class="ngSelectionCheckbox" type="checkbox" ng-checked="row.selected" />' +
+            '<span></span></label></div>',
+
+        rowTemplate = '<div ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell {{col.cellClass}}">' +
+            '<div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div>' +
+            '<div ng-cell></div></div>'
 
     $scope.queueGridOptions = {
         columnDefs: [
@@ -11,11 +21,15 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
             { field: 'position', displayName: 'Position' },
             { field: 'waiting', displayName: 'Age' },
             { field: 'joinTime', displayName: 'Since' },
-            { field: 'Action', displayName: 'Action', cellTemplate: actionCellTemplate },
+            { field: 'offering', displayName: 'Action', cellTemplate: actionCellTemplate }
         ],
         data: 'chat.helpdesk.queue.items',
+        showSelectionCheckbox: true,
         multiSelect: false,
-        enableHighlighting: true};
+        enableHighlighting: true,
+        checkboxCellTemplate: checkboxCellTemplate,
+        rowTemplate: rowTemplate
+    };
 
     $scope.joinGroup = function (group) {
         if ($scope.chat.helpdesk.currentGroup !== group) {
@@ -25,5 +39,18 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
         }
     };
 
+
+    $scope.showActionPanel = function (offering) {
+        return offering ? offering.available || false : false;
+    };
+
+    $scope.showLeftTime = function (offering) {
+        if(offering){
+            return offering.leftTime;
+        }
+        else {
+            return 'N/A';
+        }
+    };
 
 });

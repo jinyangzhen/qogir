@@ -57,3 +57,19 @@
   border: 1px solid #d4d4d4;
   height: 300px;
 }
+div > div.ngSelectionCell.checkboxes {
+  margin-top: 3px;
+  margin-left: 5px;
+}
+.fade-in-animation.ng-hide-add,
+.fade-in-animation.ng-hide-remove {
+  -webkit-transition: 0.5s linear all;
+  transition: 0.5s linear all;
+  /* remember to add this */
+
+  display: block!important;
+  opacity: 1;
+}
+.fade-in-animation.ng-hide {
+  opacity: 0;
+}
