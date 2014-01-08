@@ -61,6 +61,9 @@ div > div.ngSelectionCell.checkboxes {
   margin-top: 3px;
   margin-left: 5px;
 }
+.tag-btn {
+  cursor: pointer;
+}
 .fade-in-animation.ng-hide-add,
 .fade-in-animation.ng-hide-remove {
   -webkit-transition: 0.5s linear all;

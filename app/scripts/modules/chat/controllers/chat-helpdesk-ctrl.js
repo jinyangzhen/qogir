@@ -3,8 +3,8 @@
 angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, XmppService, $log) {
 
     var actionCellTemplate = '<div class="fade-in-animation" ng-if="row.getProperty(col.field)" ng-show="showActionPanel(row.getProperty(col.field))" style="padding: 4px">' +
-            '&nbsp<span class="label label-success">Accept</span>&nbsp<strong>or</strong>' +
-            '&nbsp<span class="label label-important">Refuse</span>&nbsp<strong> in {{showLeftTime(row.getProperty(col.field))}} seconds </strong>' +
+            '&nbsp<span class="label label-success tag-btn" ng-click="acceptIncomingCall(row.getProperty(col.field))">Accept</span>&nbsp<strong>or</strong>' +
+            '&nbsp<span class="label label-important tag-btn" ng-click="refuseIncomingCall(row.getProperty(col.field))">Refuse</span>&nbsp<strong> in {{showLeftTime(row.getProperty(col.field))}} seconds </strong>' +
             '</div>',
 
         checkboxCellTemplate = '<div class="ngSelectionCell checkboxes">' +
@@ -51,6 +51,21 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
         else {
             return 'N/A';
         }
+    };
+
+    $scope.acceptIncomingCall = function (offering) {
+        XmppService.acceptCall(offering).then(function(roomJid){
+            XmppService.joinChatRoom(roomJid).then(function(jointResult){
+                 $log.debug(jointResult);
+            },
+            function (error){
+                $log.debug(error);
+            });
+        });
+    };
+
+    $scope.refuseIncomingCall = function (offering){
+
     };
 
 });

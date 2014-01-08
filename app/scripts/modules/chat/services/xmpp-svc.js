@@ -2,10 +2,13 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     'use strict';
 
     var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
+        NS_WORKGROUP = 'http://jabber.org/protocol/workgroup',
+        NS_MUC = 'http://jabber.org/protocol/muc',
         connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
         fullJabberId = null,
         password = null,
+        groupName,
         workgroupPresenceRef,
         offeringInvitationRef,
     //_DEBUG = false,
@@ -95,12 +98,12 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     this.discoverFastpath = function () {
         var deferred = $q.defer();
         connection.sendIQ(
-            $iq({type: "get"})
-                .c("query", {xmlns: "http://jabber.org/protocol/disco#items"}),
+            $iq({type: 'get'})
+                .c('query', {xmlns: 'http://jabber.org/protocol/disco#items'}),
             function (iq) {
-                var fpId, item = $(iq).find('iq > query item[name="Fastpath"][jid^="workgroup"]');
-                if (item.length > 0) {
-                    fpId = item[0].attributes['jid'].value;
+                var fpId, fastPathItem = $(iq).find('iq > query >item[name="Fastpath"][jid^="workgroup"]');
+                if (fastPathItem.length === 1) {
+                    fpId = fastPathItem.attr('jid');
                     deferred.resolve(fpId);
                     return;
                 }
@@ -128,15 +131,14 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     this.discoverWorkgroup = function (jid) {
         var deferred = $q.defer();
         connection.sendIQ(
-            $iq({to: jid, type: "get"})
-                .c("workgroups", {xmlns: "http://jabber.org/protocol/workgroup", jid: fullJabberId}),
+            $iq({to: jid, type: 'get'})
+                .c('workgroups', {xmlns: NS_WORKGROUP, jid: fullJabberId}),
             function (iq) {
-                var i, j, wgName, names = [], workgroups = $(iq).find('iq > workgroups > workgroup[jid]');
+                var names = [], workgroups = $(iq).find('iq > workgroups > workgroup[jid]');
 
-                for (i = 0, j = workgroups.length; i < j; i++) {
-                    wgName = workgroups[i].attributes['jid'].value;
-                    names.push(wgName);
-                }
+                workgroups.each(function (index, oneGroup) {
+                    names.push($(oneGroup).attr('jid'));
+                });
 
                 deferred.resolve(names);
             },
@@ -164,10 +166,11 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             $log.debug(pres);
 
             $timeout(function () {
-                if (pres.attributes['from'].value.indexOf(group) === 0) {
+                var from = $(pres).attr('from');
+                if (from.indexOf(group) === 0) {
 
                     count = $(pres).find(' presence > notify-queue > count').text();
-                    queueName = pres.attributes['from'].value.replace(group + '/', '');
+                    queueName = from.replace(group + '/', '');
 
                     if (count) {
                         //handle the general info for the queue
@@ -182,8 +185,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                             helpdeskModel.queue.items.length = 0;      //empty existing queue   TODO: this is simple, but it may be worth to change to merge for better model handling
                             //handle detail info
                             for (var i = 0, j = endUsers.length; i < j; i++) {
-                                var jid = endUsers[i].attributes['jid'].value,
-                                    theNode = $(endUsers[i]),
+                                var theNode = $(endUsers[i]),
+                                    jid = theNode.attr('jid'),
                                     position = theNode.find('position').text(),
                                     waiting = theNode.find('time').text(),
                                     joinTime = theNode.find('join-time').text();
@@ -201,83 +204,191 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             });
 
             return true;
-        }, "http://jabber.org/protocol/workgroup", "presence");
+        }, NS_WORKGROUP, 'presence');
 
-        //observe offering and offering revoke events for sent by workgroup
+        //observe offering and offering revoke events sent by workgroup
         offeringInvitationRef = connection.addHandler(function iqHandler(iq) {
-                $log.debug(iq);
+            $log.debug(iq);
 
-                $timeout(function () {
+            $timeout(function () {
 
-                    //Offering constructor
-                    function Offering(available, timeout /* optional */) {
-                        this.available = available || false;
-                        this.leftTime = timeout;
-                    }
+                //Offering constructor
+                function Offering(id, available, timeout /* optional */) {
+                    this.id = id;
+                    this.available = available || false;
+                    this.leftTime = timeout;
+                }
 
-                    Offering.prototype = {
-                        countDown: function () {
-                            var self = this;
-                            self.leftTime--;
-                            if (self.leftTime > 0) {
-                                $timeout(function () {
-                                    self.countDown();
-                                }, 1000);
-                            }
-                        }
-                    };
-
-                    var offering, revoke, theItem, i, j, m, n;
-
-                    if (iq.attributes['from'].value.indexOf(group) === 0) {
-
-                        //check whether it is offer
-                        offering = $(iq).find('iq > offer');
-                        if (offering && offering[0]) {
-                            var offeringJid = offering[0].attributes['jid'].value,
-                                expiredAfter = +$(offering).find('timeout').text();
-                            for (i = 0, j = helpdeskModel.queue.items.length; i < j; i++) {
-                                theItem = helpdeskModel.queue.items[i];
-                                if (theItem.jid === offeringJid) {
-                                    theItem.offering = new Offering(true, expiredAfter);
-                                    theItem.offering.countDown(); //kick off time countdown
-                                }
-                            }
-                        }
-
-                    }
-
-                    //check whether it is offer-revoke
-                    revoke = $(iq).find('iq > offer-revoke');
-                    if (revoke && revoke[0]) {
-                        var revokeJid = revoke[0].attributes['jid'].value,
-                            reason = $(revoke).find('reason').text();
-                        for (m = 0, n = helpdeskModel.queue.items.length; m < n; m++) {
-                            theItem = helpdeskModel.queue.items[m];
-                            if (theItem.jid === revokeJid) {
-                                theItem.offering = new Offering();
-                                theItem.revokeReason = reason;
-                            }
+                Offering.prototype = {
+                    countDown: function () {
+                        var self = this;
+                        self.leftTime--;
+                        if (self.leftTime > 0) {
+                            $timeout(function () {
+                                self.countDown();
+                            }, 1000);
                         }
                     }
-                });
+                };
 
-                return true;
-            }, "http://jabber.org/protocol/workgroup", "iq"
-        )
-        ;
+                var offering, revoke, theItem, i, j, m, n;
 
+                //check whether it is offer
+                offering = $(iq).find('iq > offer');
+                if (offering && offering.length === 1) {
+                    var offeringId = offering.attr('id'),
+                        incomingJid = offering.attr('jid'),
+                        expiredAfter = +offering.find('timeout').text();
+                    for (i = 0, j = helpdeskModel.queue.items.length; i < j; i++) {
+                        theItem = helpdeskModel.queue.items[i];
+                        if (theItem.jid === incomingJid) {
+                            theItem.offering = new Offering(offeringId, true, expiredAfter);
+                            theItem.offering.countDown(); //kick off time countdown
+                        }
+                    }
+                }
+
+
+                //check whether it is offer-revoke
+                revoke = $(iq).find('iq > offer-revoke');
+                if (revoke && revoke.length === 1) {
+                    var revokeJid = revoke.attr('jid'),
+                        reason = revoke.find('reason').text();
+                    for (m = 0, n = helpdeskModel.queue.items.length; m < n; m++) {
+                        theItem = helpdeskModel.queue.items[m];
+                        if (theItem.jid === revokeJid) {
+                            theItem.offering = new Offering();
+                            theItem.revokeReason = reason;
+                        }
+                    }
+                }
+            });
+
+            return true;
+        }, NS_WORKGROUP, 'iq', 'set', null, group);
 
         //login to a specified group
-        connection.send($pres({to: group}).c("agent-status", {xmlns: "http://jabber.org/protocol/workgroup"}));
-        connection.send($pres({to: group}).c("status").t("Online").up().c("priority").t("1"));
+        connection.send($pres({to: group}).c('agent-status', {xmlns: NS_WORKGROUP}));
+        connection.send($pres({to: group}).c('status').t('Online').up().c('priority').t('1'));
+        groupName = group;
 
     };
 
     this.logoutWorkgroup = function () {
+        //TODO send presence unavailable to previous
         connection.deleteHandler(workgroupPresenceRef);
         connection.deleteHandler(offeringInvitationRef);
+        groupName = '';
+    };
+
+    /**
+     *
+     * @param offering
+     * @returns {*}
+     */
+    this.acceptCall = function (offering) {
+        var deferred = $q.defer();
+
+        //send an accept IQ
+        connection.sendIQ(
+            $iq({type: 'set', to: groupName}).c('offer-accept', {id: offering.id, xmlns: NS_WORKGROUP})
+        );
+
+        //listen on room invitation message sent from workgroup
+        connection.addHandler(function roomReadyHandle(msg) {
+            var roomJid;
+            $log.debug(msg);
+            if ($(msg).attr('from').split('@')[1].indexOf('conference.') === 0) {
+                var node = $(msg).find('message > x[xmlns="jabber:x:conference"]');
+                roomJid = node.attr('jid');
+                if (!roomJid) {
+                    deferred.reject('room id not found');
+                }
+                else {
+                    deferred.resolve(roomJid);
+                }
+            }
+            else {
+                return true; //keep on listening
+            }
+
+        }, NS_WORKGROUP, 'message');
+
+        return deferred.promise;
+    };
+
+    /**
+     * join a chat room for group chat
+     * @param roomJid
+     * @returns {*}
+     */
+    this.joinChatRoom = function (roomJid) {
+        function presentToRoom(roomJid, nickName) {
+            //send join msg to room
+            connection.send($pres({to: roomJid + '/' + nickName}).c('x', {xmlns: NS_MUC}));
+        }
+
+        function getRandomIdentifier() {
+            //borrow from http://stackoverflow.com/questions/1349404/generate-a-string-of-5-random-characters-in-javascript
+            var text = '', possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            for (var i = 0; i < 2; i++)
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+            return text;
+        }
+
+        var deferred = $q.defer(), nickName = fullJabberId.split('@')[0], mucPresenceHandler, mucPresenceErrHandler;
+
+        presentToRoom(roomJid, nickName);
+
+        //listen on confirmation and participants presence msg
+        mucPresenceHandler = connection.addHandler(function presenceHandler(pres) {
+            $log.debug(pres);
+
+            $timeout(function () {
+                var roomFullJid = $(pres).attr('from'), nick;
+                //if (Strophe.getBareJidFromJid(roomFullJid) === roomJid) {
+                if ($(pres).find('presence > x > item').attr('role') === 'participant') {
+                    nick = Strophe.getResourceFromJid(roomFullJid);
+                    if (nick === nickName) {
+                        // the presence's nick name returned from server is same with what sent from client,
+                        // then consider it's a confirmation of successfully joining the chat room
+                        deferred.resolve({nickName: nickName, mucHandler: mucPresenceHandler, munErrHandler: mucPresenceErrHandler});
+                    }
+                    else {
+                        // handle presence for other participants
+                        $log.debug('presence for other participants');
+                    }
+                }
+                //}
+            });
+
+            return true; // keep on observing participants' presence
+        }, NS_MUC, 'presence', null, null, roomJid, {matchBare: true});
+
+        mucPresenceErrHandler = connection.addHandler(function presenceErrHandler(pres) {
+            $log.debug(pres);
+
+            $timeout(function () {
+                if ($(pres).find('presence > error > conflict').length === 1) {
+                    //handle nick name conflict
+                    nickName = nickName + '-' + getRandomIdentifier();
+                    $timeout(presentToRoom(roomJid, nickName));
+                }
+                else {
+                    // fail to join the chat room
+                    deferred.reject($(pres).find('presence > error').attr('code'));
+                }
+            });
+
+            return true;
+        }, NS_MUC, 'presence', 'error', null, roomJid, {matchBare: true});
+
+        return deferred.promise;
+    };
+
+
+    this.leaveChatRoom = function () {
+
     }
 
-})
-;
+});
