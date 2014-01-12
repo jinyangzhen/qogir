@@ -107,26 +107,48 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     $scope.model = {
         panes: [
             {
+                id: '_chat_session',
                 head: 'Chat Session',
                 state: 'home.chat.session',
-                icon: 'icon-comments',
-                isActive: function () {
-                    return $state.current.name === 'home.chat.session'
-                }
+                icon: 'icon-comments'
             }
         ]
+    };
+
+    $scope.getTabModel = function (id) {
+        for (var i = 0, j = $scope.model.panes.length; i < j; i++) {
+            if ($scope.model.panes[i].id === id) {
+                return  $scope.model.panes[i];
+            }
+        }
+
+        return  null;
     };
 
     //try to discover the server component supporting help desk feature
     XmppService.discoverFastpath().then(function (jid) {
 
         XmppService.discoverWorkgroup(jid).then(function (workgroups) {
+
             $scope.model.panes.push({
+                id: '_help_desk',
                 head: ' Help Desk',
                 state: 'home.chat.helpdesk',
                 icon: 'icon-storm',
-                isActive: function () {
-                    return $state.current.name === 'home.chat.helpdesk'
+                extra: function () {
+                    var count = $scope.chat.helpdesk.queue ? $scope.chat.helpdesk.queue.count : 0;
+                    return '(' + count + ')';
+                }
+            });
+
+            $scope.model.panes.push({
+                id: '_group_talk',
+                head: ' Group Talk ',
+                state: 'home.chat.group.list',
+                icon: 'icon-user-group',
+                extra: function () {
+                    var length = $scope.chat.helpdesk.chatRoom.length;
+                    return '(' + length + ')';
                 }
             });
 
@@ -134,10 +156,11 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
                 selectedGroup: null,
                 fastPathId: jid,
                 groupList: workgroups,
-                requestQueue: []
+                requestQueue: [],
+                chatRoom: [],
+                currentRoom: null
             };
         });
-
 
     });
 

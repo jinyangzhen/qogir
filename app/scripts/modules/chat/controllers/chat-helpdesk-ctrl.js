@@ -13,7 +13,9 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
 
         rowTemplate = '<div ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell {{col.cellClass}}">' +
             '<div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div>' +
-            '<div ng-cell></div></div>'
+            '<div ng-cell></div></div>';
+
+    $scope.getTabModel('_help_desk').active= true;
 
     $scope.queueGridOptions = {
         columnDefs: [
@@ -45,7 +47,7 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
     };
 
     $scope.showLeftTime = function (offering) {
-        if(offering){
+        if (offering) {
             return offering.leftTime;
         }
         else {
@@ -54,17 +56,27 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
     };
 
     $scope.acceptIncomingCall = function (offering) {
-        XmppService.acceptCall(offering).then(function(roomJid){
-            XmppService.joinChatRoom(roomJid).then(function(jointResult){
-                 $log.debug(jointResult);
-            },
-            function (error){
-                $log.debug(error);
-            });
+        XmppService.acceptCall(offering).then(function (roomJid) {
+            var newRoom = {
+                jid: roomJid,
+                participants: []
+            };
+
+            XmppService.joinChatRoom(newRoom).then(function (jointResult) {
+                    //join successfully, push to the model representing 'group talk'
+                    $scope.chat.helpdesk.chatRoom.push(newRoom);
+                    $scope.chat.helpdesk.currentRoom = newRoom;
+                    //then simply navigate to the view
+                    $state.go('home.chat.group.detail', {roomId: newRoom.jid.split('@')[0]});
+                    $log.debug(jointResult);
+                },
+                function (error) {
+                    $log.debug(error);
+                });
         });
     };
 
-    $scope.refuseIncomingCall = function (offering){
+    $scope.refuseIncomingCall = function (offering) {
 
     };
 

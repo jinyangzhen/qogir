@@ -20,13 +20,26 @@ angular.module('chat', ['main']).config(function ($stateProvider) {
         })
         .state('home.chat.session', {
             url: '/session',
-            templateUrl: modulePath + '/views/chat-session-view.html'
+            templateUrl: modulePath + '/views/chat-session-view.html',
+            controller: 'ChatSessionCtrl'
         })
         .state('home.chat.helpdesk', {
             url: '/helpdesk',
             templateUrl: modulePath + '/views/chat-helpdesk-view.html',
             controller: 'ChatHelpDeskCtrl'
         })
+        .state('home.chat.group', {
+            abstract: true,
+            url: '/group',
+            templateUrl: modulePath + '/views/chat-group-view.html',
+            controller: 'ChatGroupCtrl'
+        })
+        .state('home.chat.group.list', {
+            url: ''
+        })
+        .state('home.chat.group.detail', {
+            url: '/{roomId:[a-zA-Z0-9]{1,12}}'  //openfire room ususally identified with 9 chars (alphabet + number)
+        });
     ;
 
 });

@@ -1,0 +1,33 @@
+<div class="row">
+    <div class="span1"></div>
+    <div class="span7">
+        <div> <span>paticipants: </span></div>
+        <div ng-show="chat.helpdesk.currentRoom" id="msgDisplay" class="row well">
+            <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
+                 ng-repeat="item in chat.helpdesk.currentRoom.history track by item.timestamp">
+                <strong>{{item.userId + '>'}}</strong>
+                <span>{{item.message}}</span>
+            </div>
+        </div>
+        <div ng-show="chat.helpdesk.currentRoom" id="msgInput" class="row">
+            <textarea id="chatInput" rows="4" ng-model="chat.helpdesk.currentRoom.inputMessage"
+                      placeholder="Enter your message"> </textarea>
+            <button id="sendBtn" class="btn min-width btn-primary" type="button" ng-click="send()">Send</button>
+        </div>
+    </div>
+
+    <div id="session" class="span3">
+        <div id="sessionToolbar" class="row tool-bar">
+            <a class="btn btn-icon" ><i class="icon-delete"></i> Terminate </a>
+            <a class="btn btn-icon" ><i class="icon-add-user"></i> Invite </a>
+        </div>
+        <div id="sessionList" class="row">
+            <ul class="nav nav-list">
+                <li ng-class="room.jid == chat.helpdesk.currentRoom.jid ? 'active':''"
+                    ng-repeat="room in chat.helpdesk.chatRoom">
+                    <a href="" ng-click="moveTo(room)">{{room.jid}}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

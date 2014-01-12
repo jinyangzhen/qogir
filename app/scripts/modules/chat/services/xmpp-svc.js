@@ -4,6 +4,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
         NS_WORKGROUP = 'http://jabber.org/protocol/workgroup',
         NS_MUC = 'http://jabber.org/protocol/muc',
+        NS_MUC_USER = 'http://jabber.org/protocol/muc#user',
         connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
         fullJabberId = null,
@@ -322,7 +323,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param roomJid
      * @returns {*}
      */
-    this.joinChatRoom = function (roomJid) {
+    this.joinChatRoom = function (room) {
+
         function presentToRoom(roomJid, nickName) {
             //send join msg to room
             connection.send($pres({to: roomJid + '/' + nickName}).c('x', {xmlns: NS_MUC}));
@@ -336,43 +338,44 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             return text;
         }
 
-        var deferred = $q.defer(), nickName = fullJabberId.split('@')[0], mucPresenceHandler, mucPresenceErrHandler;
+        var deferred = $q.defer(), nickName = fullJabberId.split('@')[0], mucPresenceRef, mucPresenceErrRef;
 
-        presentToRoom(roomJid, nickName);
+        presentToRoom(room.jid, nickName);
 
-        //listen on confirmation and participants presence msg
-        mucPresenceHandler = connection.addHandler(function presenceHandler(pres) {
+        //listen on confirmation and participants presence stanza
+        mucPresenceRef = connection.addHandler(function presenceHandler(pres) {
             $log.debug(pres);
 
             $timeout(function () {
                 var roomFullJid = $(pres).attr('from'), nick;
-                //if (Strophe.getBareJidFromJid(roomFullJid) === roomJid) {
                 if ($(pres).find('presence > x > item').attr('role') === 'participant') {
                     nick = Strophe.getResourceFromJid(roomFullJid);
                     if (nick === nickName) {
                         // the presence's nick name returned from server is same with what sent from client,
                         // then consider it's a confirmation of successfully joining the chat room
-                        deferred.resolve({nickName: nickName, mucHandler: mucPresenceHandler, munErrHandler: mucPresenceErrHandler});
+
+                        //  connection.deleteHandler(mucPresenceErrRef);
+                        deferred.resolve({nickName: nickName, mucHandler: mucPresenceRef, munErrHandler: mucPresenceErrRef});
                     }
                     else {
+                        room.participants.push(nick);
                         // handle presence for other participants
                         $log.debug('presence for other participants');
                     }
                 }
-                //}
             });
 
-            return true; // keep on observing participants' presence
-        }, NS_MUC, 'presence', null, null, roomJid, {matchBare: true});
+            return true; // keep on observing participants' presence to the room
+        }, NS_MUC_USER, 'presence', null, null, room.jid, {matchBare: true});
 
-        mucPresenceErrHandler = connection.addHandler(function presenceErrHandler(pres) {
+        mucPresenceErrRef = connection.addHandler(function presenceErrHandler(pres) {
             $log.debug(pres);
 
             $timeout(function () {
                 if ($(pres).find('presence > error > conflict').length === 1) {
                     //handle nick name conflict
                     nickName = nickName + '-' + getRandomIdentifier();
-                    $timeout(presentToRoom(roomJid, nickName));
+                    presentToRoom(room.jid, nickName);
                 }
                 else {
                     // fail to join the chat room
@@ -381,7 +384,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             });
 
             return true;
-        }, NS_MUC, 'presence', 'error', null, roomJid, {matchBare: true});
+        }, NS_MUC, 'presence', 'error', null, room.jid, {matchBare: true});
 
         return deferred.promise;
     };
