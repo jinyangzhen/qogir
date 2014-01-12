@@ -1,18 +1,20 @@
 <div class="row">
     <div class="span1"></div>
-    <div class="span7">
-        <div> <span>paticipants: </span></div>
-        <div ng-show="chat.helpdesk.currentRoom" id="msgDisplay" class="row well">
+    <div  ng-show="chat.helpdesk.currentRoom"  class="span7">
+        <div><span><strong>participants: </strong></span>
+            <span ng-repeate="name in chat.helpdesk.currentRoom.participants">&nbsp{{name}}&nbsp</span>
+        </div>
+        <div id="msgDisplay" class="row well">
             <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
                  ng-repeat="item in chat.helpdesk.currentRoom.history track by item.timestamp">
                 <strong>{{item.userId + '>'}}</strong>
                 <span>{{item.message}}</span>
             </div>
         </div>
-        <div ng-show="chat.helpdesk.currentRoom" id="msgInput" class="row">
+        <div id="msgInput" class="row">
             <textarea id="chatInput" rows="4" ng-model="chat.helpdesk.currentRoom.inputMessage"
                       placeholder="Enter your message"> </textarea>
-            <button id="sendBtn" class="btn min-width btn-primary" type="button" ng-click="send()">Send</button>
+            <button id="sendBtn" class="btn min-width btn-primary" type="button" ng-click="chatToRoom()">Send</button>
         </div>
     </div>
 

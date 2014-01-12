@@ -15,7 +15,7 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
             '<div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div>' +
             '<div ng-cell></div></div>';
 
-    $scope.getTabModel('_help_desk').active= true;
+    $scope.getTabModel('_help_desk').active = true;
 
     $scope.queueGridOptions = {
         columnDefs: [
@@ -59,16 +59,20 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
         XmppService.acceptCall(offering).then(function (roomJid) {
             var newRoom = {
                 jid: roomJid,
-                participants: []
+                nickName: null,
+                participants: [],
+                observables: [],
+                history: []
             };
 
-            XmppService.joinChatRoom(newRoom).then(function (jointResult) {
-                    //join successfully, push to the model representing 'group talk'
+            XmppService.joinChatRoom(newRoom).then(function () {
+                    XmppService.observeRoomMessage(newRoom);
+                    //finally, push to the model representing 'group talk'
                     $scope.chat.helpdesk.chatRoom.push(newRoom);
                     $scope.chat.helpdesk.currentRoom = newRoom;
                     //then simply navigate to the view
                     $state.go('home.chat.group.detail', {roomId: newRoom.jid.split('@')[0]});
-                    $log.debug(jointResult);
+                    $log.debug(newRoom.observables);
                 },
                 function (error) {
                     $log.debug(error);

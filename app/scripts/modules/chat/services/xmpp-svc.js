@@ -276,7 +276,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
     this.logoutWorkgroup = function () {
-        //TODO send presence unavailable to previous
+        //TODO send presence 'unavailable' to previous group
         connection.deleteHandler(workgroupPresenceRef);
         connection.deleteHandler(offeringInvitationRef);
         groupName = '';
@@ -351,11 +351,15 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                 if ($(pres).find('presence > x > item').attr('role') === 'participant') {
                     nick = Strophe.getResourceFromJid(roomFullJid);
                     if (nick === nickName) {
-                        // the presence's nick name returned from server is same with what sent from client,
+                        // if the presence's nick name returned from server is same with what sent from client,
                         // then consider it's a confirmation of successfully joining the chat room
 
                         //  connection.deleteHandler(mucPresenceErrRef);
-                        deferred.resolve({nickName: nickName, mucHandler: mucPresenceRef, munErrHandler: mucPresenceErrRef});
+
+                        room.nickName = nickName;
+                        room.observables.push(mucPresenceRef);
+                        room.observables.push(mucPresenceErrRef);
+                        deferred.resolve();
                     }
                     else {
                         room.participants.push(nick);
@@ -390,8 +394,42 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
 
-    this.leaveChatRoom = function () {
+    this.closeChatRoom = function () {
+        //TODO remove observer
+    };
 
-    }
+    /**
+     * watch on group chat
+     * @param room
+     * @returns {*}
+     */
+    this.observeRoomMessage = function (room) {
+        var msgHandlerRef = connection.addHandler(function (msg) {
+            $log.debug(msg);
+
+            $timeout(function () {
+                var participantNickName = Strophe.getResourceFromJid($(msg).attr('from')), body = $(msg).find('message > body');
+
+                if (participantNickName !== room.nickName && body.length === 1) {
+                    room.history.push({ userId: participantNickName, timestamp: Date.now(), message: body.text()});
+                }
+            });
+
+            return true;
+
+        }, null, 'message', 'groupchat', null, room.jid, {matchBare: true});
+
+        room.observables.push(msgHandlerRef);
+    };
+
+    /**
+     *
+     * @param jid
+     * @param msg
+     */
+    this.chatToRoom = function (jid, msg) {
+        var message = $msg({to: jid, 'type': 'groupchat'}).c('body').t(msg).up().c('active', {xmlns: 'http://jabber.org/protocol/chatstates'});
+        connection.send(message);
+    };
 
 });
