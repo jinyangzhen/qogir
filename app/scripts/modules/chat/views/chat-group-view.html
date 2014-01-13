@@ -2,7 +2,7 @@
     <div class="span1"></div>
     <div  ng-show="chat.helpdesk.currentRoom"  class="span7">
         <div><span><strong>participants: </strong></span>
-            <span ng-repeate="name in chat.helpdesk.currentRoom.participants">&nbsp{{name}}&nbsp</span>
+            <span ng-repeat="name in chat.helpdesk.currentRoom.participants">&nbsp{{name}}&nbsp</span>
         </div>
         <div id="msgDisplay" class="row well">
             <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
