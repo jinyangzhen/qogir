@@ -36,4 +36,8 @@ angular.module('chat').controller('ChatGroupCtrl', function ($scope, $state, $st
         return $scope.chat.helpdesk.currentRoom.nickName !== userId;
     };
 
+    $scope.newTicket = function (roomJid) {
+        XmppService.sendTicketIQ(roomJid.split('@')[0]);
+    }
+
 });

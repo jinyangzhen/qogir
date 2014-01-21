@@ -38,7 +38,7 @@ angular.module('chat', ['main']).config(function ($stateProvider) {
             url: ''
         })
         .state('home.chat.group.detail', {
-            url: '/{roomId:[a-zA-Z0-9]{1,12}}'  //openfire room ususally identified with 9 chars (alphabet + number)
+            url: '/{roomId:[a-zA-Z0-9]{1,12}}'  //openfire room usually identified with 9 chars (alphabet + number)
         });
     ;
 

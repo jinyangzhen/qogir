@@ -432,4 +432,24 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         connection.send(message);
     };
 
+    /**
+     * to create new ticket via SM gateway
+     */
+    this.sendTicketIQ = function (id) {
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({type: 'set'})
+                .c('query', {xmlns: 'com:hp:emei:iq:gateway', sessionId: id }),
+            function (iq) {
+                $log(iq);
+                deferred.resolve();
+            }, function (err) {
+                $log(err)
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
 });
