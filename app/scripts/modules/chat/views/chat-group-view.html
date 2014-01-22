@@ -1,5 +1,9 @@
 <div class="row">
     <div class="span1"></div>
+    <div ng-show="chat.helpdesk.ticketId" class="alert alert-success">
+        <button data-dismiss="alert" class="close" type="button">×</button>
+        You successfully create a ticket - {{chat.helpdesk.ticketId}}.
+    </div>
     <div  ng-show="chat.helpdesk.currentRoom"  class="span7">
         <div><span><strong>participants: </strong></span>
             <span ng-repeat="name in chat.helpdesk.currentRoom.participants">&nbsp{{name}}&nbsp</span>

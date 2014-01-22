@@ -37,7 +37,12 @@ angular.module('chat').controller('ChatGroupCtrl', function ($scope, $state, $st
     };
 
     $scope.newTicket = function (roomJid) {
-        XmppService.sendTicketIQ(roomJid.split('@')[0]);
+        XmppService.sendTicketIQ(roomJid.split('@')[0]).then(function (ticketId) {
+            $scope.chat.helpdesk.ticketId = ticketId;
+            $timeout(function () {
+                $scope.chat.helpdesk.ticketId = null;
+            }, 5000)
+        });
     }
 
 });
