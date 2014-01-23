@@ -348,8 +348,9 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
             $timeout(function () {
                 var roomFullJid = $(pres).attr('from'), nick;
+
+                nick = Strophe.getResourceFromJid(roomFullJid);
                 if ($(pres).find('presence > x > item').attr('role') === 'participant') {
-                    nick = Strophe.getResourceFromJid(roomFullJid);
                     if (nick === nickName) {
                         // if the presence's nick name returned from server is same with what sent from client,
                         // then consider it's a confirmation of successfully joining the chat room
@@ -365,6 +366,14 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         room.participants.push(nick);
                         // handle presence for other participants
                         $log.debug('presence for other participants');
+                    }
+                }
+
+                if ($(pres).attr('type') === 'unavailable') {
+                    for (var i = 0, j = room.participants.length; i < j; i++) {
+                        if (room.participants[i] === nick) {
+                            room.participants.splice(i, 1);
+                        }
                     }
                 }
             });
@@ -440,7 +449,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({type: 'set'})
-                .c('query', {xmlns: 'com:hp:emei:iq:gateway', sessionId: id }),
+                .c('query', {'xmlns': 'com:hp:emei:iq:gateway', 'session-id': id }),
             function (iq) {
                 deferred.resolve($(iq).find('iq > query[ticketId]').attr('ticketId'));
             }, function (err) {

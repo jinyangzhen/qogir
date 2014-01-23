@@ -4,12 +4,13 @@
         <button data-dismiss="alert" class="close" type="button">×</button>
         You successfully create a ticket - {{chat.helpdesk.ticketId}}.
     </div>
-    <div  ng-show="chat.helpdesk.currentRoom"  class="span7">
+    <div ng-show="chat.helpdesk.currentRoom" class="span7">
         <div><span><strong>participants: </strong></span>
             <span ng-repeat="name in chat.helpdesk.currentRoom.participants">&nbsp{{name}}&nbsp</span>
         </div>
         <div id="msgDisplay" class="row well">
-            <div class="chat-message" ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
+            <div class="chat-message"
+                 ng-class="{'user-msg': !isCounterpartId(item.userId), 'counterpart-msg': isCounterpartId(item.userId) }"
                  ng-repeat="item in chat.helpdesk.currentRoom.history track by item.timestamp">
                 <strong>{{item.userId + '>'}}</strong>
                 <span>{{item.message}}</span>
@@ -24,9 +25,10 @@
 
     <div id="session" class="span3">
         <div id="sessionToolbar" class="row tool-bar">
-            <a class="btn btn-icon" ><i class="icon-delete"></i> Terminate </a>
-            <a class="btn btn-icon" ><i class="icon-add-user"></i> Invite </a>
-            <a class="btn btn-icon" ng-click="newTicket(chat.helpdesk.currentRoom.jid)"><i class="icon-new-documents"></i> New Ticket </a>
+            <a class="btn btn-icon"><i class="icon-delete"></i> Terminate </a>
+            <a class="btn btn-icon"><i class="icon-add-user"></i> Invite </a>
+            <a class="btn btn-icon" ng-show="chat.helpdesk.currentRoom.participants.length==0"
+               ng-click="newTicket(chat.helpdesk.currentRoom.jid)"><i class="icon-new-documents"></i> New Ticket </a>
         </div>
         <div id="sessionList" class="row">
             <ul class="nav nav-list">

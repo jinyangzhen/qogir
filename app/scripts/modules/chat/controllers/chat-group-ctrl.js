@@ -36,6 +36,10 @@ angular.module('chat').controller('ChatGroupCtrl', function ($scope, $state, $st
         return $scope.chat.helpdesk.currentRoom.nickName !== userId;
     };
 
+    $scope.isRoomEmpty = function (room) {
+        return room.participants.length === 0;
+    };
+
     $scope.newTicket = function (roomJid) {
         XmppService.sendTicketIQ(roomJid.split('@')[0]).then(function (ticketId) {
             $scope.chat.helpdesk.ticketId = ticketId;
