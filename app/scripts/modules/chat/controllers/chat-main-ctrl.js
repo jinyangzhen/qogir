@@ -10,7 +10,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
     }
     else {
         //go to default tab
-        $state.go('home.chat.session');
+        $state.go('home.chat.conversation');
     }
 
     $scope.connectionStatus = XmppService.getCurrentStatus();
@@ -105,15 +105,22 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
 
     //define view model
     $scope.model = {
-        panes: [
-            {
-                id: '_chat_session',
-                head: 'Chat Session',
-                state: 'home.chat.session',
-                icon: 'icon-comments'
-            }
-        ]
+        panes: []
     };
+
+    XmppService.discoverPubsub().then(function (jid){
+        $scope.model.panes.push({
+            id: '_chat_conversation',
+            head: 'Conversation',
+            state: 'home.chat.conversation',
+            icon: 'icon-comments'
+        });
+
+        $scope.chat.conversation = {
+            pubSubId: jid
+        }
+    });
+
 
     $scope.getTabModel = function (id) {
         for (var i = 0, j = $scope.model.panes.length; i < j; i++) {

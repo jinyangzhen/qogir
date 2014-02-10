@@ -125,6 +125,38 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
     /**
+     * check whether Pubsub service available on server end
+     * @returns {*}
+     */
+    this.discoverPubsub = function () {
+        var deferred = $q.defer();
+        connection.sendIQ(
+            $iq({type: 'get'})
+                .c('query', {xmlns: 'http://jabber.org/protocol/disco#items'}),
+            function (iq) {
+                var pubSubId, pubsubItem = $(iq).find('iq > query >item[name="Publish-Subscribe service"][jid^="pubsub"]');
+                if (pubsubItem.length === 1) {
+                    pubSubId = pubsubItem.attr('jid');
+                    deferred.resolve(pubSubId);
+                    return;
+                }
+
+                deferred.reject('Publish-Subscribe service not found');
+            },
+            function (error) {
+                if (error) {
+                    deferred.reject(error);
+                }
+                else {
+                    deferred.reject('time out');
+                }
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
      * find back the work groups the component sets up
      * @param jid
      * @returns {*}
@@ -460,4 +492,9 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         return deferred.promise;
     };
+
+
+    this.createConversationNode = function (pubSubId, recordId){
+
+    }
 });

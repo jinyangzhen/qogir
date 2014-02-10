@@ -57,6 +57,16 @@
   border: 1px solid #d4d4d4;
   height: 300px;
 }
+#conversationPanel {
+  margin-top: -50px;
+}
+#converstationInput {
+  width: 100%;
+  height: 60px;
+}
+#conversationDetail {
+  margin-top: 10px;
+}
 div > div.ngSelectionCell.checkboxes {
   margin-top: 3px;
   margin-left: 5px;

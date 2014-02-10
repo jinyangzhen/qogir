@@ -18,10 +18,10 @@ angular.module('chat', ['main']).config(function ($stateProvider) {
             templateUrl: modulePath + '/views/chat-main-view.html',
             controller: 'ChatMainCtrl'
         })
-        .state('home.chat.session', {
-            url: '/session',
-            templateUrl: modulePath + '/views/chat-session-view.html',
-            controller: 'ChatSessionCtrl'
+        .state('home.chat.conversation', {
+            url: '/conversation',
+            templateUrl: modulePath + '/views/chat-conversation-view.html',
+            controller: 'ChatConversationCtrl'
         })
         .state('home.chat.helpdesk', {
             url: '/helpdesk',
