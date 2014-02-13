@@ -14,12 +14,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.conversationGridOptions = {
         columnDefs: [
-            { field: 'id', displayName: 'Record ID' },
-            { field: 'type', displayName: 'Record Type' },
-            { field: 'since', displayName: 'Age' },
-            { field: 'numberOfParticipants', displayName: 'Participant #' }
+            { field: 'conversationId', displayName: 'Record ID' },
+            { field: 'title', displayName: 'Record Title' },
+            { field: 'numberOfSubscriptions', displayName: 'Participant #' }
         ],
-        data: 'chat.conversation.items',
+        data: 'chat.conversation.subscriptions',
         showSelectionCheckbox: true,
         multiSelect: false,
         enableHighlighting: true,
@@ -27,19 +26,25 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         rowTemplate: rowTemplate
     };
 
-    $scope.chat.conversation = {
-        items: [
-            {
-                id: 'SD10000',
-                type: 'Interaction',
-                since: Date.now(),
-                numberOfParticipants: 4
-            }
-        ]
+    $scope.createConversation = function () {
+        XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1009');
+        //immediate to subscribe the new conversation
+        XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1009');
     };
 
 
-    $scope.createConversation = function (){
-
+    $scope.publishNote = function () {
+        XmppService.publish($scope.chat.conversation.pubSubId, 'SD1004');
     };
+
+    $scope.addParticipant = function () {
+        XmppService.inviteParticipant($scope.chat.conversation.pubSubId, 'SD1009', 'admin@jinyangz6');
+    };
+
+    //refresh the subscriptions list of the current user
+    XmppService.getAllSubscriptionsByUser($scope.chat.conversation.pubSubId).then(function (subscriptions){
+        $scope.chat.conversation.subscriptions = subscriptions;
+    });
+
+
 });

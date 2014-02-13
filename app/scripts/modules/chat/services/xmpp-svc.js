@@ -5,6 +5,13 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         NS_WORKGROUP = 'http://jabber.org/protocol/workgroup',
         NS_MUC = 'http://jabber.org/protocol/muc',
         NS_MUC_USER = 'http://jabber.org/protocol/muc#user',
+        NS_DISC_INFO = 'http://jabber.org/protocol/disco#info',
+        NS_PUBSUB = 'http://jabber.org/protocol/pubsub',
+        NS_PUBSUB_CONFIG = 'http://jabber.org/protocol/pubsub#node_config',
+        NS_PUBSUB_OWNER = 'http://jabber.org/protocol/pubsub#owner',
+        NS_PUBSUB_EVENT = 'http://jabber.org/protocol/pubsub#event',
+        NS_JABBER_X_DATA = 'jabber:x:data',
+
         connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
         fullJabberId = null,
@@ -12,6 +19,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         groupName,
         workgroupPresenceRef,
         offeringInvitationRef,
+        conversationRef,
+        invitationRef,
     //_DEBUG = false,
         statusTxt = {};
 
@@ -41,7 +50,6 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             if (connectionStatus === Strophe.Status.CONNECTED) {
                 fullJabberId = connection.jid; //keep the full id which has resource (session) part
                 password = pass;
-                connection.send($pres()); //send presence for listening on incoming msg
                 deferred.resolve(condition);
             }
             else if (connectionStatus === Strophe.Status.CONNECTING) {
@@ -58,6 +66,11 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             }
         });
         return deferred.promise;
+    };
+
+    this.presence = function (){
+        //send presence to server, and start to observe incoming msg
+        connection.send($pres());
     };
 
     this.disconnect = function () {
@@ -485,7 +498,69 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             function (iq) {
                 deferred.resolve($(iq).find('iq > query[ticketId]').attr('ticketId'));
             }, function (err) {
-                $log(err)
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     * create a pubsub node according to the id of system of record
+     * @param pubSubId  the publish-subscribe service address in XMPP server
+     * @param recordId  the id of system of record
+     * @param recordTitle   the title of system of record
+     * @returns {*}
+     */
+    this.createConversationNode = function (pubSubId, recordId, recordTitle) {
+        //this.getConversationNodeConfiguration(pubSubId, recordId);
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {'xmlns': NS_PUBSUB}).c('create', {node: recordId})
+                .up().c('configure').c('x', {'xmlns': NS_JABBER_X_DATA, type: 'submit'})
+                .c('field', {'var': 'FORM_TYPE', 'type': 'hidden'}).c('value').t(NS_PUBSUB_CONFIG).up().up()
+                .c('field', {'var': 'pubsub#title'}).c('value').t(recordId + '-' + (recordTitle || '')).up().up()
+                //configure this node allow:
+                //  1. presence based even delivery
+                //  2. all to contribute
+                //  3. conversation records are persisted
+                .c('field', {'var': 'pubsub#presence_based_delivery'}).c('value').t('1').up().up()
+                .c('field', {'var': 'pubsub#publish_model'}).c('value').t('open').up().up()
+                .c('field', {'var': 'pubsub#persist_items'}).c('value').t('1'),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     * publish a comment to a conversation which is identified via id of system of record.
+     * @param pubSubId
+     * @param recordId
+     * @returns {*}
+     */
+    this.publish = function (pubSubId, recordId) {
+        var deferred = $q.defer();
+        //'<event><messageType>System</messageType><body>' + msg + '</body></event>';
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
+                .c('publish', {node: recordId}).c('item').c('event', {}).c('messageType').t('Comment').up().c('body').t('this is a test'),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
                 deferred.reject();
             }
         );
@@ -494,7 +569,280 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
 
-    this.createConversationNode = function (pubSubId, recordId){
+    /**
+     * subscribe to a conversation
+     * @param pubSubId
+     * @param recordId
+     * @returns {*}
+     */
+    this.subscribe = function (pubSubId, recordId) {
+        var deferred = $q.defer();
 
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
+                .c('subscribe', {node: recordId, jid: fullJabberId}),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     *
+     * @param pubSubId
+     * @param recordId
+     */
+    this.unsubscribe = function (pubSubId, recordId) {
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
+                .c('unsubscribe', {node: recordId, jid: fullJabberId}),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     *
+     * @param pubSubId
+     * @param recordId
+     * @param participantJabberId
+     */
+    this.inviteParticipant = function (pubSubId, recordId, participantJabberId) {
+/*        var message = $msg({to: participantJabberId, 'type': 'normal'})
+            .c('x', {xmlns: NS_PUBSUB_EVENT}).c('invite', {to: pubSubId, conversation: recordId })
+            .c('reason').t(Strophe.getBareJidFromJid(fullJabberId) + ' has invited you to join a conversation - ' + recordId);
+        connection.send(message);*/
+
+        var message2 = $msg({to: participantJabberId, type: 'normal', 'pubsub': pubSubId, conversation: recordId})
+            .c('body', {xmlns: NS_PUBSUB_EVENT}).t(Strophe.getBareJidFromJid(fullJabberId) + ' has invited you to join a conversation - ' + recordId);
+        connection.send(message2);
+    };
+
+    /**
+     * Ideally, attach the listener when pubsub srv discovered
+     * @param pubSubId
+     */
+    this.attachConversationListener = function (pubSubId) {
+        conversationRef = connection.addHandler(function (msg) {
+            //new conversation will be captured here
+            $log.debug(msg);
+
+            return true;
+        }, NS_PUBSUB_EVENT, 'message', null, null, pubSubId);
+    };
+
+    /**
+     * And detach the listener when the chat view is destroyed
+     */
+    this.detachConversationListener = function () {
+        if (conversationRef && connection) {
+            $log.debug('detach conversation listener...');
+            connection.deleteHandler(conversationRef);
+        }
+    };
+
+    /**
+     * Ideally, attach the listener when pubsub srv discovered
+     * @param pubSubId
+     */
+    this.attachInvitationListener = function () {
+        var self = this;
+
+        //to monitor conversation invitation
+        invitationRef = connection.addHandler(function (msg) {
+            //new invitation will be captured here
+            $log.debug(msg);
+
+            var pubSubId = $(msg).find('message > x > invite').attr('to'),
+                conversationId = $(msg).find('message > x > invite').attr('conversation');
+
+            self.subscribe(pubSubId, conversationId);
+
+            return true;
+        }, NS_PUBSUB_EVENT, 'message', 'normal');
+    };
+
+
+    this.detachInvitationListener = function () {
+        if (invitationRef && connection) {
+            $log.debug('detach conversation invitation listener...');
+            connection.deleteHandler(invitationRef);
+        }
+    };
+
+    /**
+     * load history
+     * @param pubSubId
+     * @param recordId
+     * @returns {*}
+     */
+    this.getPastConversation = function (pubSubId, recordId) {
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'get'})
+                .c('pubsub', {xmlns: NS_PUBSUB}).c('items', {node: recordId}
+            ),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     * Return all nodes that the current user subscribes
+     * @param pubSubId
+     * @returns {*}
+     */
+    this.getAllSubscriptionsByUser = function (pubSubId) {
+        var deferred = $q.defer(), self = this;
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'get'})
+                .c('pubsub', {xmlns: NS_PUBSUB}).c('subscriptions'),
+            function (iq) {
+                var subHtmlNodes, jqNode, sub, numPromise, metaPromise,
+                    subscriptions = [], promises = [];
+                $log.debug(iq);
+                // loop all nodes to aggregate the details of each node's subscriptions
+                subHtmlNodes = $(iq).find('iq > pubsub > subscriptions > subscription');
+                for (var i = 0, j = subHtmlNodes.length; i < j; i++) {
+                    jqNode = $(subHtmlNodes[i]);
+                    sub = {
+                        conversationId: jqNode.attr('node'),
+                        subscriber: jqNode.attr('jid'),
+                        status: jqNode.attr('subscription'),
+                        subId: jqNode.attr('subid'),
+                        numberOfSubscriptions: null,
+                        owner: null,
+                        participants: [],
+                        title: null
+                    };
+
+                    numPromise = self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
+                    metaPromise = self.getConversationMetadata(pubSubId, sub.conversationId, sub);
+                    subscriptions.push(sub);
+                    promises.push(numPromise);
+                    promises.push(metaPromise);
+                }
+
+                $q.all(promises).then(function () {
+                    deferred.resolve(subscriptions);
+                });
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     * Acquire the meta-data of a specified conversation node
+     * @param pubSubId
+     * @param recordId
+     * @returns {*}
+     */
+    this.getConversationMetadata = function (pubSubId, recordId, resultObj) {
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'get'})
+                .c('query', {xmlns: NS_DISC_INFO, node: recordId}),
+            function (iq) {
+                $log.debug(iq);
+                var theTitle = $(iq).find('iq > query > x >field[var="pubsub#title"] > value').text(),
+                    theOwner = $(iq).find('iq > query > x >field[var="pubsub#owner"] > value').text();
+                resultObj.title = theTitle.split('-')[1];
+                resultObj.owner = theOwner;
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     *
+     * @param pubSubId
+     * @param recordId
+     * @param resultObj
+     * @returns {*}
+     */
+    this.getAllSubscriptionsByRecord = function (pubSubId, recordId, resultObj) {
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({from: fullJabberId, to: pubSubId, type: 'get'})
+                .c('pubsub', {xmlns: NS_PUBSUB}).c('subscriptions', {node: recordId}),
+            function (iq) {
+                $log.debug(iq);
+                var subHtmlNodes = $(iq).find('iq > pubsub > subscriptions > subscription');
+                resultObj.numberOfSubscriptions = subHtmlNodes.length;
+                for (var i = 0, j = subHtmlNodes.length; i < j; i++) {
+                    resultObj.participants.push(Strophe.getBareJidFromJid($(subHtmlNodes[i]).attr('jid')));
+                }
+
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    /**
+     *
+     * @param pubSubId
+     * @param recordId
+     */
+    this.getNodeConfiguration = function (pubSubId, recordId) {
+
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({to: pubSubId, type: 'get'}).c('pubsub', {'xmlns': NS_PUBSUB_OWNER}).c('configure', {node: recordId}),
+            function (iq) {
+                $log.debug(iq);
+                deferred.resolve();
+            },
+            function (err) {
+                $log(err);
+                deferred.reject();
+            }
+        );
     }
 });
