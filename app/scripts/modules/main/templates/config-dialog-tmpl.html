@@ -3,8 +3,14 @@
          K2 Configuration
     </div>
     <div class="modal-body">
-        <span class="configLabel">BOSH server </span>
-        <input class="configInput" type="text" ng-model="config.boshEndpoint" placeholder="e.g. http://ip:port/http-bind/">
+        <div>
+            <span class="configLabel">BOSH server </span>
+            <input class="configInput" type="text" ng-model="config.boshEndpoint" placeholder="e.g. http://ip:port/http-bind/">
+        </div>
+        <div style="margin-top: 5px">
+            <span class="configLabel">XMPP domain </span>
+            <input class="configInput" type="text" ng-model="config.xmppDomain" placeholder="e.g. smc.hp.com">
+        </div>
     </div>
     <div class="modal-footer">
         <button class="btn min-width btn-primary" type="button" ng-click="proceedToSave()">Apply</button>

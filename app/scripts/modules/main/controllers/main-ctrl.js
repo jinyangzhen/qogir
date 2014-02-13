@@ -14,6 +14,7 @@ angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, 
         //TODO bosh configuration specific to chat module, need to refactor
         //
         $scope.config.boshEndpoint = PersistenceService.getItem('bosh_service') || '';
+        $scope.config.xmppDomain =  PersistenceService.getItem('xmpp_domain') || '';
         configModalInstance = $modal.open({
             templateUrl: 'scripts/modules/main/templates/config-dialog-tmpl.html',
             scope: $scope
@@ -25,6 +26,7 @@ angular.module('main').controller('MainCtrl', function ($scope, $state, $modal, 
         //TODO bosh configuration specific to chat module, need to refactor
         //
         PersistenceService.setItem('bosh_service', $scope.config.boshEndpoint);
+        PersistenceService.setItem('xmpp_domain', $scope.config.xmppDomain);
         configModalInstance.dismiss('saved');
         $scope.callbacks.onChangeConfig('bosh_service');
     };

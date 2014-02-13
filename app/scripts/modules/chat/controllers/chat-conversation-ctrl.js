@@ -27,9 +27,9 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     $scope.createConversation = function () {
-        XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1009');
+        XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1010');
         //immediate to subscribe the new conversation
-        XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1009');
+        XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1010');
     };
 
 
@@ -38,7 +38,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     $scope.addParticipant = function () {
-        XmppService.inviteParticipant($scope.chat.conversation.pubSubId, 'SD1009', 'admin@jinyangz6');
+        XmppService.inviteParticipant($scope.chat.conversation.pubSubId, 'SD1010', 'admin@jinyangz6');
     };
 
     //refresh the subscriptions list of the current user

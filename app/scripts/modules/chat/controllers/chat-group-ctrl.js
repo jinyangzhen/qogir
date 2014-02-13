@@ -4,7 +4,6 @@ angular.module('chat').controller('ChatGroupCtrl', function ($scope, $state, $st
 
     $scope.getTabModel('_group_talk').active = true;
 
-
     function scrollMessageDisplay() {
         //TODO move out dom population from controller
         $timeout(function () {

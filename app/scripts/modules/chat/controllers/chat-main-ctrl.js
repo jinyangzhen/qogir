@@ -1,24 +1,22 @@
 'use strict';
 
-angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, XmppService, $modal, $timeout, $log, $window) {
-    var chatWithModalInstance,
+angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $stateParams, XmppService, $modal, $timeout, $log, $window) {
+    var discoverPubsub = function () {
+            return XmppService.discoverPubsub().then(function (jid) {
+                $scope.model.panes.push({
+                    id: '_chat_conversation',
+                    head: 'Conversation',
+                    state: 'home.chat.conversation',
+                    icon: 'icon-comments'
+                });
 
-        discoverPubsub = function () {
-        return XmppService.discoverPubsub().then(function (jid) {
-            $scope.model.panes.push({
-                id: '_chat_conversation',
-                head: 'Conversation',
-                state: 'home.chat.conversation',
-                icon: 'icon-comments'
+                $scope.chat.conversation = {
+                    pubSubId: jid
+                };
+
+                XmppService.attachConversationListener(jid);
+                XmppService.attachInvitationListener();
             });
-
-            $scope.chat.conversation = {
-                pubSubId: jid
-            };
-
-            XmppService.attachConversationListener(jid);
-            XmppService.attachInvitationListener();
-        });
         },
 
         discoverFastpath = function () {
@@ -64,48 +62,66 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, Xmpp
             });
         };
 
-    if (!XmppService.isConnected()) {
+    function initialization() {
+        $scope.connectionStatus = XmppService.getCurrentStatus();
+
+        //define view model
+        $scope.model = {
+            panes: []
+        };
+
+        //define the domain model
+        $scope.chat = {};
+
+        $scope.getTabModel = function (id) {
+            for (var i = 0, j = $scope.model.panes.length; i < j; i++) {
+                if ($scope.model.panes[i].id === id) {
+                    return  $scope.model.panes[i];
+                }
+            }
+            return  null;
+        };
+
+        discoverPubsub().then(discoverFastpath).then(discoverWorkgroup).then(function () {
+            //IMPORTANT: only after all services initialized, make the user presence available on the server.
+            //Because server sends offline msg as long as a user's presence is available, so we have to make sure correct
+            //initialization order to prepare all kinds of messages' listener.
+            XmppService.presence();
+        });
+
+        $scope.callbacks.onQuit = XmppService.disconnect;
+        $window.onbeforeunload = XmppService.disconnect;
+
+
+        $scope.$on('$destroy', function () {
+            XmppService.detachConversationListener();
+            XmppService.detachInvitationListener();
+        })
+    }
+
+    if ($stateParams.userid && $stateParams.passwd) {
+        //given userid and password, try to direct login
+        XmppService.connect($stateParams.userid, $stateParams.passwd).then(
+            function () {
+                //go back to the state
+                $state.go('home.chat', {userid: null, passwd: null});
+                initialization();
+            },
+            function (error) {
+                XmppService.disconnect(); //terminate the unused session if any
+                $log.error('fail to connect cos ' + error);
+                //prompt for login
+                $state.go('home.login');
+            }
+        );
+    }
+    else if (!XmppService.isConnected()) {
         //prompt for login
         $state.go('home.login');
-        return;
     }
     else {
         //go to default tab
         $state.go('home.chat.conversation');
+        initialization();
     }
-
-    $scope.connectionStatus = XmppService.getCurrentStatus();
-
-    //define view model
-    $scope.model = {
-        panes: []
-    };
-
-    //define the domain model
-    $scope.chat = {};
-
-    $scope.getTabModel = function (id) {
-        for (var i = 0, j = $scope.model.panes.length; i < j; i++) {
-            if ($scope.model.panes[i].id === id) {
-                return  $scope.model.panes[i];
-            }
-        }
-        return  null;
-    };
-
-    discoverPubsub().then(discoverFastpath).then(discoverWorkgroup).then(function (){
-        //IMPORTANT: only after all services initialized, make the user presence available on the server
-        //Because server sends offline msg as long as a user's presence is available, so we have to make sure correct
-        //initialization order to prepare all kinds of messages' listener.
-         XmppService.presence();
-    });
-
-    $scope.callbacks.onQuit = XmppService.disconnect;
-    $window.onbeforeunload = XmppService.disconnect;
-
-
-    $scope.$on('$destroy', function () {
-        XmppService.detachConversationListener();
-        XmppService.detachInvitationListener();
-    })
 });

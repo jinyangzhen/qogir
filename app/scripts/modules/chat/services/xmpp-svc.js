@@ -1,17 +1,16 @@
 angular.module('chat').service('XmppService', function ($log, $q, $timeout, PersistenceService) {
     'use strict';
 
-    var BOSH_SERVICE = PersistenceService.getItem('bosh_service') || 'http://localhost:7070/http-bind/',
+    var BOSH_SERVICE = SMC_CONFIG.bosh,
+        XMPP_DOMAIN = SMC_CONFIG.domain,
         NS_WORKGROUP = 'http://jabber.org/protocol/workgroup',
-        NS_MUC = 'http://jabber.org/protocol/muc',
         NS_MUC_USER = 'http://jabber.org/protocol/muc#user',
-        NS_DISC_INFO = 'http://jabber.org/protocol/disco#info',
         NS_PUBSUB = 'http://jabber.org/protocol/pubsub',
         NS_PUBSUB_CONFIG = 'http://jabber.org/protocol/pubsub#node_config',
         NS_PUBSUB_OWNER = 'http://jabber.org/protocol/pubsub#owner',
         NS_PUBSUB_EVENT = 'http://jabber.org/protocol/pubsub#event',
         NS_JABBER_X_DATA = 'jabber:x:data',
-
+        CLIENT_ID = 'smc',
         connection,
         connectionStatus = Strophe.Status.DISCONNECTED,
         fullJabberId = null,
@@ -21,7 +20,6 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         offeringInvitationRef,
         conversationRef,
         invitationRef,
-    //_DEBUG = false,
         statusTxt = {};
 
     statusTxt[Strophe.Status.CONNECTING] = 'Connecting';
@@ -30,25 +28,19 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     statusTxt[Strophe.Status.DISCONNECTED] = 'Disconnected';
     statusTxt[Strophe.Status.DISCONNECTING] = 'Disconnecting';
 
-    /*    connection.rawInput = function (data) {
-     if (_DEBUG) {
-     $log.debug('RECV: ' + data);
-     }
-     };
-     connection.rawOutput = function (data) {
-     if (_DEBUG) {
-     $log.debug('SEND: ' + data);
-     }
-     };*/
-
     this.connect = function (jid, pass) {
         var deferred = $q.defer();
+
+        //reconfigure in case they are overridden through the client.
+        BOSH_SERVICE = PersistenceService.getItem('bosh_service') || BOSH_SERVICE;
+        XMPP_DOMAIN = PersistenceService.getItem('xmpp_domain') || XMPP_DOMAIN;
+
         connection = new Strophe.Connection(BOSH_SERVICE);
-        connection.connect(jid, pass, function (status, condition) {
+        connection.connect(jid + '@' + XMPP_DOMAIN + '/' + CLIENT_ID, pass, function (status, condition) {
             connectionStatus = status;
 
             if (connectionStatus === Strophe.Status.CONNECTED) {
-                fullJabberId = connection.jid; //keep the full id which has resource (session) part
+                fullJabberId = connection.jid; //keep the full id which has resource (client id) part
                 password = pass;
                 deferred.resolve(condition);
             }
@@ -68,7 +60,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         return deferred.promise;
     };
 
-    this.presence = function (){
+    this.presence = function () {
         //send presence to server, and start to observe incoming msg
         connection.send($pres());
     };
@@ -145,7 +137,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         var deferred = $q.defer();
         connection.sendIQ(
             $iq({type: 'get'})
-                .c('query', {xmlns: 'http://jabber.org/protocol/disco#items'}),
+                .c('query', {xmlns: Strophe.NS.DISCO_ITEMS}),
             function (iq) {
                 var pubSubId, pubsubItem = $(iq).find('iq > query >item[name="Publish-Subscribe service"][jid^="pubsub"]');
                 if (pubsubItem.length === 1) {
@@ -372,7 +364,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         function presentToRoom(roomJid, nickName) {
             //send join msg to room
-            connection.send($pres({to: roomJid + '/' + nickName}).c('x', {xmlns: NS_MUC}));
+            connection.send($pres({to: roomJid + '/' + nickName}).c('x', {xmlns: Strophe.NS.MUC}));
         }
 
         function getRandomIdentifier() {
@@ -442,7 +434,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             });
 
             return true;
-        }, NS_MUC, 'presence', 'error', null, room.jid, {matchBare: true});
+        }, Strophe.NS.MUC, 'presence', 'error', null, room.jid, {matchBare: true});
 
         return deferred.promise;
     };
@@ -625,18 +617,20 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param participantJabberId
      */
     this.inviteParticipant = function (pubSubId, recordId, participantJabberId) {
-/*        var message = $msg({to: participantJabberId, 'type': 'normal'})
-            .c('x', {xmlns: NS_PUBSUB_EVENT}).c('invite', {to: pubSubId, conversation: recordId })
-            .c('reason').t(Strophe.getBareJidFromJid(fullJabberId) + ' has invited you to join a conversation - ' + recordId);
-        connection.send(message);*/
-
-        var message2 = $msg({to: participantJabberId, type: 'normal', 'pubsub': pubSubId, conversation: recordId})
-            .c('body', {xmlns: NS_PUBSUB_EVENT}).t(Strophe.getBareJidFromJid(fullJabberId) + ' has invited you to join a conversation - ' + recordId);
-        connection.send(message2);
+        var invitationMsg =
+            $msg(
+                {to: participantJabberId,
+                    type: 'normal',
+                    'pubsub': pubSubId,
+                    conversation: recordId
+                })
+                .c('body', {xmlns: NS_PUBSUB_EVENT})
+                .t(Strophe.getBareJidFromJid(fullJabberId) + ' has invited you to join a conversation - ' + recordId);
+        connection.send(invitationMsg);
     };
 
     /**
-     * Ideally, attach the listener when pubsub srv discovered
+     * Attach the listener when pubsub srv discovered
      * @param pubSubId
      */
     this.attachConversationListener = function (pubSubId) {
@@ -649,7 +643,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
     /**
-     * And detach the listener when the chat view is destroyed
+     *
      */
     this.detachConversationListener = function () {
         if (conversationRef && connection) {
@@ -659,7 +653,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
     /**
-     * Ideally, attach the listener when pubsub srv discovered
+     * Attach the listener after pubsub srv discovered
      * @param pubSubId
      */
     this.attachInvitationListener = function () {
@@ -670,8 +664,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             //new invitation will be captured here
             $log.debug(msg);
 
-            var pubSubId = $(msg).find('message > x > invite').attr('to'),
-                conversationId = $(msg).find('message > x > invite').attr('conversation');
+            var pubSubId = $(msg).attr('pubsub'),
+                conversationId = $(msg).attr('conversation');
 
             self.subscribe(pubSubId, conversationId);
 
@@ -679,7 +673,9 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         }, NS_PUBSUB_EVENT, 'message', 'normal');
     };
 
-
+    /**
+     *
+     */
     this.detachInvitationListener = function () {
         if (invitationRef && connection) {
             $log.debug('detach conversation invitation listener...');
@@ -743,8 +739,17 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         title: null
                     };
 
-                    numPromise = self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
-                    metaPromise = self.getConversationMetadata(pubSubId, sub.conversationId, sub);
+                    self.getConversationMetadata(pubSubId, sub.conversationId, sub).then(function (owner) {
+                        if(owner === Strophe.getBareJidFromJid(fullJabberId)){
+                            //as per XEP-0060, only node owner can get subscription details of one specific node
+                            self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
+                        }
+
+                    })
+
+                    numPromise =
+                    metaPromise =
+
                     subscriptions.push(sub);
                     promises.push(numPromise);
                     promises.push(metaPromise);
@@ -774,14 +779,14 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'get'})
-                .c('query', {xmlns: NS_DISC_INFO, node: recordId}),
+                .c('query', {xmlns: Strophe.NS.DISCO_INFO, node: recordId}),
             function (iq) {
                 $log.debug(iq);
                 var theTitle = $(iq).find('iq > query > x >field[var="pubsub#title"] > value').text(),
                     theOwner = $(iq).find('iq > query > x >field[var="pubsub#owner"] > value').text();
                 resultObj.title = theTitle.split('-')[1];
                 resultObj.owner = theOwner;
-                deferred.resolve();
+                deferred.resolve(theOwner);
             },
             function (err) {
                 $log(err);
@@ -793,7 +798,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
     };
 
     /**
-     *
+     * Acquire all subscriptions for one conversation
      * @param pubSubId
      * @param recordId
      * @param resultObj
@@ -804,7 +809,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'get'})
-                .c('pubsub', {xmlns: NS_PUBSUB}).c('subscriptions', {node: recordId}),
+                .c('pubsub', {xmlns: NS_PUBSUB_OWNER}).c('subscriptions', {node: recordId}),
             function (iq) {
                 $log.debug(iq);
                 var subHtmlNodes = $(iq).find('iq > pubsub > subscriptions > subscription');

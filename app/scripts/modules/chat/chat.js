@@ -14,7 +14,7 @@ angular.module('chat', ['main']).config(function ($stateProvider) {
         controller: 'LoginCtrl'
     })
         .state('home.chat', {
-            url: '/chat',
+            url: '/chat?userid&passwd',
             templateUrl: modulePath + '/views/chat-main-view.html',
             controller: 'ChatMainCtrl'
         })
