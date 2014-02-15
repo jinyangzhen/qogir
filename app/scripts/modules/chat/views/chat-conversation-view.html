@@ -5,10 +5,10 @@
         </a>
         <span class="divider-vertical"></span>
         <a class="btn btn-icon" ng-click="addParticipant()">
-            <i class="icon-user" ></i><span>&nbspAdd&nbspParticipants</span>
+            <i class="icon-user"></i><span>&nbspAdd&nbspParticipants</span>
         </a>
         <a class="btn btn-icon" ng-click="unsubscribe()">
-            <i class="icon-cancel" ></i><span>&nbspUnsubscribe&nbsp</span>
+            <i class="icon-cancel"></i><span>&nbspUnsubscribe&nbsp</span>
         </a>
         <span class="divider-vertical"></span>
         <a class="btn btn-icon" ng-click="refreshConversationList()">
@@ -18,22 +18,22 @@
             <span class="label label-success">3</span>
         </a>
     </div>
-    <div id="conversationGrid" class="row-fluid"  ng-grid="conversationGridOptions"></div>
+    <div id="conversationGrid" class="row-fluid" ng-grid="conversationGridOptions"></div>
     <div ng-show="selectedConversationId" id="converstationPost" class="row-fluid">
         <div><h4>{{selectedConversationId}}</h4></div>
         <div>
             <textarea id="converstationInput" rows="3" placeholder="Enter your message, Ctrl+Enter to send"
-                    ng-model="draftMessage" ui-keydown="{'ctrl-enter': 'publishNote($event)'}"></textarea>
+                      ng-model="draftMessage" ui-keydown="{'ctrl-enter': 'publishNote($event)'}"></textarea>
         </div>
     </div>
     <div ng-show="selectedConversationId" id="conversationDetail" class="row-fluid">
-        <div class="accordion-group">
+        <div class="accordion-group" ng-repeat="note in chat.conversation.map[selectedConversationId].notes">
             <div class="accordion-heading">
                 <h4 href="#collapseOne" data-parent="#accordion2" data-toggle="collapse" class="accordion-toggle">
-                    <i class="icon-triangle"></i>Jennifer Falcon at 12/08/15 16:53:31 </h4>
+                    <i class="icon-triangle"></i>{{note.publisher}} at {{note.timestamp}} </h4>
             </div>
             <div style="height: auto;" class="accordion-body in collapse" id="collapseOne">
-                <div class="accordion-inner"> Hello, Dirk Could you help check the status of adv-nam-server-mail?.
+                <div class="accordion-inner"> {{note.comment}}
                 </div>
             </div>
         </div>

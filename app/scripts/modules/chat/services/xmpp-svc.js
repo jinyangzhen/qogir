@@ -634,23 +634,27 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      */
     this.attachConversationListener = function (conversation) {
         conversationRef = connection.addHandler(function (msg) {
-            var payload = $(msg).find('message > event > items'),
-                conversationId = payload.attr('node'),
-                items = payload.find('item'),
-                note, jqItem;
 
-            if (conversation.map[conversationId] && conversation.map[conversationId].notes) {
-                for (var i = 0, j = items.length; i < j; i++) {
-                    jqItem = $(items[i]);
-                    note = {
-                        publisher: jqItem.find('item > x > field[var="publisher"] > value').text(),
-                        timestamp: jqItem.find('item x > field[var="timestamp"] > value').text(),
-                        comment: jqItem.find('item x > field[var="comment"] > value').text()
+            $timeout(function () {
+                var payload = $(msg).find('message > event > items'),
+                    conversationId = payload.attr('node'),
+                    items = payload.find('item'),
+                    note, jqItem;
+
+                if (conversation.map[conversationId] && conversation.map[conversationId].notes) {
+                    for (var i = 0, j = items.length; i < j; i++) {
+                        jqItem = $(items[i]);
+                        note = {
+                            publisher: jqItem.find('item > x > field[var="publisher"] > value').text(),
+                            timestamp: jqItem.find('item x > field[var="timestamp"] > value').text(),
+                            comment: jqItem.find('item x > field[var="comment"] > value').text()
+                        }
+
+                        conversation.map[conversationId].notes.push(note);
                     }
-
-                    conversation.map[conversationId].notes.push(note);
                 }
-            }
+            });
+
 
             return true;
         }, NS_PUBSUB_EVENT, 'message', null, null, conversation.pubSubId);
