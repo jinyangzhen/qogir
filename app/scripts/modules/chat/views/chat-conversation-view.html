@@ -1,14 +1,17 @@
 <div id="conversationPanel" class="container-fluid">
     <div id="conversationBar" class="tool-bar tabbed row-fluid">
         <a class="btn btn-icon" ng-click="createConversation()">
-            <i class="icon-folder-open"></i><span>&nbspOpen</span>
+            <i class="icon-new-entity"></i><span>&nbspOpen</span>
         </a>
         <span class="divider-vertical"></span>
         <a class="btn btn-icon" ng-click="addParticipant()">
             <i class="icon-user" ></i><span>&nbspAdd&nbspParticipants</span>
         </a>
+        <a class="btn btn-icon" ng-click="unsubscribe()">
+            <i class="icon-cancel" ></i><span>&nbspUnsubscribe&nbsp</span>
+        </a>
         <span class="divider-vertical"></span>
-        <a class="btn btn-icon">
+        <a class="btn btn-icon" ng-click="refreshConversationList()">
             <i class="icon-refresh "></i>
         </a>
         <a class="pull-right">
@@ -16,13 +19,14 @@
         </a>
     </div>
     <div id="conversationGrid" class="row-fluid"  ng-grid="conversationGridOptions"></div>
-    <div id="converstationPost" class="row-fluid">
-        <div><h4>SD 1000 Webmail login failure </h4></div>
+    <div ng-show="selectedConversationId" id="converstationPost" class="row-fluid">
+        <div><h4>{{selectedConversationId}}</h4></div>
         <div>
-            <textarea id="converstationInput" rows="3" placeholder="Enter your message"> </textarea>
+            <textarea id="converstationInput" rows="3" placeholder="Enter your message, Ctrl+Enter to send"
+                    ng-model="draftMessage" ui-keydown="{'ctrl-enter': 'publishNote($event)'}"></textarea>
         </div>
     </div>
-    <div id="conversationDetail" class="row-fluid">
+    <div ng-show="selectedConversationId" id="conversationDetail" class="row-fluid">
         <div class="accordion-group">
             <div class="accordion-heading">
                 <h4 href="#collapseOne" data-parent="#accordion2" data-toggle="collapse" class="accordion-toggle">

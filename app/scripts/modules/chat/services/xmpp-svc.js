@@ -506,7 +506,6 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @returns {*}
      */
     this.createConversationNode = function (pubSubId, recordId, recordTitle) {
-        //this.getConversationNodeConfiguration(pubSubId, recordId);
         var deferred = $q.defer();
 
         connection.sendIQ(
@@ -515,10 +514,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                 .c('field', {'var': 'FORM_TYPE', 'type': 'hidden'}).c('value').t(NS_PUBSUB_CONFIG).up().up()
                 .c('field', {'var': 'pubsub#title'}).c('value').t(recordId + '-' + (recordTitle || '')).up().up()
                 //configure this node allow:
-                //  1. presence based even delivery
-                //  2. all to contribute
-                //  3. conversation records are persisted
-                .c('field', {'var': 'pubsub#presence_based_delivery'}).c('value').t('1').up().up()
+                //  1. all to contribute
+                //  2. conversation records are persisted
                 .c('field', {'var': 'pubsub#publish_model'}).c('value').t('open').up().up()
                 .c('field', {'var': 'pubsub#persist_items'}).c('value').t('1'),
             function (iq) {
@@ -540,13 +537,15 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param recordId
      * @returns {*}
      */
-    this.publish = function (pubSubId, recordId) {
+    this.publish = function (pubSubId, recordId, message) {
         var deferred = $q.defer();
-        //'<event><messageType>System</messageType><body>' + msg + '</body></event>';
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
-                .c('publish', {node: recordId}).c('item').c('event', {}).c('messageType').t('Comment').up().c('body').t('this is a test'),
+                .c('publish', {node: recordId}).c('item').c('x', {xmlns: NS_JABBER_X_DATA, type: 'result'})
+                .c('field', {var: 'publisher'}).c('value').t(Strophe.getBareJidFromJid(fullJabberId)).up().up()
+                .c('field', {var: 'comment'}).c('value').t(message).up().up()
+                .c('field', {var: 'timestamp'}).c('value').t(Date.now().toString()),
             function (iq) {
                 $log.debug(iq);
                 deferred.resolve();
@@ -616,12 +615,12 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param recordId
      * @param participantJabberId
      */
-    this.inviteParticipant = function (pubSubId, recordId, participantJabberId) {
+    this.inviteParticipant = function (pubSubId, recordId, participantId) {
         var invitationMsg =
             $msg(
-                {to: participantJabberId,
+                {to: participantId + '@' + XMPP_DOMAIN,
                     type: 'normal',
-                    'pubsub': pubSubId,
+                    pubsub: pubSubId,
                     conversation: recordId
                 })
                 .c('body', {xmlns: NS_PUBSUB_EVENT})
@@ -631,15 +630,30 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
     /**
      * Attach the listener when pubsub srv discovered
-     * @param pubSubId
+     * @param conversation  the domain model which hold all conversation data
      */
-    this.attachConversationListener = function (pubSubId) {
+    this.attachConversationListener = function (conversation) {
         conversationRef = connection.addHandler(function (msg) {
-            //new conversation will be captured here
-            $log.debug(msg);
+            var payload = $(msg).find('message > event > items'),
+                conversationId = payload.attr('node'),
+                items = payload.find('item'),
+                note, jqItem;
+
+            if (conversation.map[conversationId] && conversation.map[conversationId].notes) {
+                for (var i = 0, j = items.length; i < j; i++) {
+                    jqItem = $(items[i]);
+                    note = {
+                        publisher: jqItem.find('item > x > field[var="publisher"] > value').text(),
+                        timestamp: jqItem.find('item x > field[var="timestamp"] > value').text(),
+                        comment: jqItem.find('item x > field[var="comment"] > value').text()
+                    }
+
+                    conversation.map[conversationId].notes.push(note);
+                }
+            }
 
             return true;
-        }, NS_PUBSUB_EVENT, 'message', null, null, pubSubId);
+        }, NS_PUBSUB_EVENT, 'message', null, null, conversation.pubSubId);
     };
 
     /**
@@ -721,10 +735,10 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             $iq({from: fullJabberId, to: pubSubId, type: 'get'})
                 .c('pubsub', {xmlns: NS_PUBSUB}).c('subscriptions'),
             function (iq) {
-                var subHtmlNodes, jqNode, sub, numPromise, metaPromise,
+                var subHtmlNodes, jqNode, sub, metaPromise,
                     subscriptions = [], promises = [];
                 $log.debug(iq);
-                // loop all nodes to aggregate the details of each node's subscriptions
+                // loop all conversation nodes to aggregate the details of each node's subscriptions
                 subHtmlNodes = $(iq).find('iq > pubsub > subscriptions > subscription');
                 for (var i = 0, j = subHtmlNodes.length; i < j; i++) {
                     jqNode = $(subHtmlNodes[i]);
@@ -732,26 +746,25 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         conversationId: jqNode.attr('node'),
                         subscriber: jqNode.attr('jid'),
                         status: jqNode.attr('subscription'),
-                        subId: jqNode.attr('subid'),
-                        numberOfSubscriptions: null,
+                        numberOfSubscriptions: 'N/A',
                         owner: null,
                         participants: [],
                         title: null
                     };
 
-                    self.getConversationMetadata(pubSubId, sub.conversationId, sub).then(function (owner) {
-                        if(owner === Strophe.getBareJidFromJid(fullJabberId)){
+                    metaPromise = self.getConversationMetadata(pubSubId, sub.conversationId, sub).then(function (owner) {
+                        var deferred = $q.defer();
+
+                        if (owner === Strophe.getBareJidFromJid(fullJabberId)) {
                             //as per XEP-0060, only node owner can get subscription details of one specific node
-                            self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
+                            return self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
                         }
 
-                    })
-
-                    numPromise =
-                    metaPromise =
+                        deferred.resolve();
+                        return deferred.promise;   // return an immediate resolved promise
+                    });
 
                     subscriptions.push(sub);
-                    promises.push(numPromise);
                     promises.push(metaPromise);
                 }
 

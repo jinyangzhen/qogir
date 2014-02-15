@@ -11,10 +11,12 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
                 });
 
                 $scope.chat.conversation = {
-                    pubSubId: jid
+                    pubSubId: jid,
+                    subscriptions: [],    //summary of each conversation
+                    map: {}               //details of conversation, index with the conversation id.
                 };
 
-                XmppService.attachConversationListener(jid);
+                XmppService.attachConversationListener($scope.chat.conversation);
                 XmppService.attachInvitationListener();
             });
         },
@@ -103,7 +105,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
         //given userid and password, try to direct login
         XmppService.connect($stateParams.userid, $stateParams.passwd).then(
             function () {
-                //go back to the state
+                //go back to the state, nullify the sensitive credential from url
                 $state.go('home.chat', {userid: null, passwd: null});
                 initialization();
             },
