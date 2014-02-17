@@ -72,11 +72,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.createConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1017');
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1018');
             },
 
             subscribe = function () {
-                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1017');
+                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1018');
             };
 
         createNode().then(subscribe()).then(getSubscriptionList());

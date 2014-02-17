@@ -595,7 +595,8 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
-                .c('unsubscribe', {node: recordId, jid: fullJabberId}),
+                .c('unsubscribe', {node: '5W0j5f2nRHnvlI5', jid: 'demo@jinyangz6/86cb7b16'}),
+            //.c('unsubscribe', {node: recordId, jid: fullJabberId}),
             function (iq) {
                 $log.debug(iq);
                 deferred.resolve();
@@ -739,14 +740,16 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             $iq({from: fullJabberId, to: pubSubId, type: 'get'})
                 .c('pubsub', {xmlns: NS_PUBSUB}).c('subscriptions'),
             function (iq) {
-                var subHtmlNodes, jqNode, sub, metaPromise,
+                var subHtmlNodes, jqNode, aSubscription, metaPromise,
                     subscriptions = [], promises = [];
                 $log.debug(iq);
+
+                //$timeout(function () {
                 // loop all conversation nodes to aggregate the details of each node's subscriptions
                 subHtmlNodes = $(iq).find('iq > pubsub > subscriptions > subscription');
                 for (var i = 0, j = subHtmlNodes.length; i < j; i++) {
                     jqNode = $(subHtmlNodes[i]);
-                    sub = {
+                    aSubscription = {
                         conversationId: jqNode.attr('node'),
                         subscriber: jqNode.attr('jid'),
                         status: jqNode.attr('subscription'),
@@ -756,25 +759,27 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         title: null
                     };
 
-                    metaPromise = self.getConversationMetadata(pubSubId, sub.conversationId, sub).then(function (owner) {
-                        var deferred = $q.defer();
+                    metaPromise = self.getConversationMetadata(pubSubId, aSubscription.conversationId, aSubscription)
+                        .then(function (resultedSubscription) {
+                            var deferred = $q.defer();
 
-                        if (owner === Strophe.getBareJidFromJid(fullJabberId)) {
-                            //as per XEP-0060, only node owner can get subscription details of one specific node
-                            return self.getAllSubscriptionsByRecord(pubSubId, sub.conversationId, sub);
-                        }
+                            if (resultedSubscription.owner === Strophe.getBareJidFromJid(fullJabberId)) {
+                                //as per XEP-0060, only node owner can get subscription details of one specific node
+                                return self.getAllSubscriptionsByRecord(pubSubId, resultedSubscription.conversationId, resultedSubscription);
+                            }
 
-                        deferred.resolve();
-                        return deferred.promise;   // return an immediate resolved promise
-                    });
+                            deferred.resolve();
+                            return deferred.promise;   // return an immediate resolved promise
+                        });
 
-                    subscriptions.push(sub);
+                    subscriptions.push(aSubscription);
                     promises.push(metaPromise);
                 }
 
                 $q.all(promises).then(function () {
                     deferred.resolve(subscriptions);
                 });
+                // });
             },
             function (err) {
                 $log(err);
@@ -803,7 +808,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                     theOwner = $(iq).find('iq > query > x >field[var="pubsub#owner"] > value').text();
                 resultObj.title = theTitle.split('-')[1];
                 resultObj.owner = theOwner;
-                deferred.resolve(theOwner);
+                deferred.resolve(resultObj);
             },
             function (err) {
                 $log(err);
