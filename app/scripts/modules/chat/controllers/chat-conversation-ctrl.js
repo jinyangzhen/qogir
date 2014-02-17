@@ -25,7 +25,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     $scope.getTabModel('_chat_conversation').active = true;
 
     $scope.getUnreadNumber = function (recordId){
-        if(recordId !== $scope.selectedConversationId) {
+        if(recordId !== $scope.selectedConversationId && $scope.chat.conversation.map[recordId]) {
             return  $scope.chat.conversation.map[recordId].numberOfUnread;
         }
         else {
