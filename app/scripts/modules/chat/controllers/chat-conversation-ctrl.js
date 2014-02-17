@@ -2,7 +2,12 @@
 
 angular.module('chat').controller('ChatConversationCtrl', function ($scope, $state, XmppService, $log) {
 
-    var checkboxCellTemplate = '<div class="ngSelectionCell checkboxes">' +
+    var idCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
+            '<span ng-cell-text>{{row.getProperty(col.field)}}&nbsp&nbsp </span>' +
+            '<span class="label label-warning" class="fade-in-animation" ' +
+            'ng-if="getUnreadNumber(row.getProperty(col.field))>0">{{getUnreadNumber(row.getProperty(col.field))}}</span></div>',
+
+        checkboxCellTemplate = '<div class="ngSelectionCell checkboxes">' +
             '<label><input tabindex="-1" class="ngSelectionCheckbox" type="checkbox" ng-checked="row.selected" />' +
             '<span></span></label></div>',
 
@@ -19,11 +24,22 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.getTabModel('_chat_conversation').active = true;
 
+    $scope.getUnreadNumber = function (recordId){
+        if(recordId !== $scope.selectedConversationId) {
+            return  $scope.chat.conversation.map[recordId].numberOfUnread;
+        }
+        else {
+            //if view the current selected conversation, assume user will see the post immediately, no info badge needed.
+            return 0;
+        }
+
+    };
+
     //view model
     $scope.draftMessage = '';
     $scope.conversationGridOptions = {
         columnDefs: [
-            { field: 'conversationId', displayName: 'Record ID' },
+            { field: 'conversationId', displayName: 'Record ID', cellTemplate: idCellTemplate },
             { field: 'title', displayName: 'Record Title' },
             { field: 'owner', displayName: 'Owner' },
             { field: 'numberOfSubscriptions', displayName: 'Participant #' }
@@ -43,7 +59,18 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         }
     });
 
-    $scope.$watch('conversationGridOptions.selectedItems', function (selectedItems) {
+    $scope.$watch('conversationGridOptions.selectedItems', function (selectedItems, previousItems) {
+        var previousId;
+
+        if (previousItems.length === 1) {
+            previousId = previousItems[0].conversationId;
+
+            if ($scope.chat.conversation.map[previousId]) {
+                //reset number of unread when leaving the conversation
+                $scope.chat.conversation.map[previousId].numberOfUnread = 0;
+            }
+        }
+
         if (selectedItems.length === 1) {
             $scope.selectedConversationId = selectedItems[0].conversationId;
 
@@ -51,6 +78,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
                 //not found, initialize the model for this conversation
                 $scope.chat.conversation.map[$scope.selectedConversationId] = {
                     initLoad: false,
+                    numberOfUnread: 0,
                     draftMessage: '',
                     notes: []
                 }
@@ -121,6 +149,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
             //TODO visually disable the btn if conversation not selected
             $log.warn('please select one covnersation');
         }
+    };
+
+    $scope.formatTimestamp = function (timestamp) {
+        var time = new Date(parseInt(timestamp));
+        return time.toLocaleString();
     };
 
     $scope.refreshConversationList = getSubscriptionList;

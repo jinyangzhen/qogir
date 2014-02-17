@@ -14,9 +14,6 @@
         <a class="btn btn-icon" ng-click="refreshConversationList()">
             <i class="icon-refresh "></i>
         </a>
-        <a class="pull-right">
-            <span class="label label-success">3</span>
-        </a>
     </div>
     <div id="conversationGrid" class="row-fluid" ng-grid="conversationGridOptions"></div>
     <div ng-show="selectedConversationId" id="converstationPost" class="row-fluid">
@@ -30,10 +27,10 @@
         <div class="accordion-group fade-in-animation"
              ng-repeat="note in chat.conversation.map[selectedConversationId].notes | orderBy:'timestamp':true">
             <div class="accordion-heading">
-                <h4 href="#collapseOne" data-parent="#accordion2" data-toggle="collapse" class="accordion-toggle">
-                    <i class="icon-triangle"></i>{{note.publisher}} at {{note.timestamp}} </h4>
+                <h4 href="#{{note.id}}" data-parent="#accordion2" data-toggle="collapse" class="accordion-toggle">
+                    <i class="icon-triangle"></i>{{note.publisher}} at {{formatTimestamp(note.timestamp)}} </h4>
             </div>
-            <div style="height: auto;" class="accordion-body in collapse" id="collapseOne">
+            <div style="height: auto;" class="accordion-body in collapse" id="{{note.id}}">
                 <div class="accordion-inner"> {{note.comment}}
                 </div>
             </div>

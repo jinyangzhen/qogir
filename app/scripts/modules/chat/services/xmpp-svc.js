@@ -639,6 +639,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
     function getConversationNoteFromJqObject(jqObject) {
         return {
+            id: jqObject.attr('id'),
             publisher: jqObject.find('item > x > field[var="publisher"] > value').text(),
             timestamp: jqObject.find('item x > field[var="timestamp"] > value').text(),
             comment: jqObject.find('item x > field[var="comment"] > value').text()
@@ -650,9 +651,12 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param conversation  the domain model which hold all conversation data
      */
     this.attachConversationListener = function (conversation) {
+        var self = this;
+
         conversationRef = connection.addHandler(function (msg) {
 
             $timeout(function () {
+                // embedded inside $timeout() in order to quickly reflect the model change via angular.$apply()
                 var payload = $(msg).find('message > event > items'),
                     conversationId = payload.attr('node'),
                     items = payload.find('item'),
@@ -663,7 +667,20 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         jqItem = $(items[i]);
                         note = getConversationNoteFromJqObject(jqItem);
                         conversation.map[conversationId].notes.push(note);
+                        conversation.map[conversationId].numberOfUnread++;
                     }
+                }
+                else {
+                    //the conversation data not initialize, only init a empty model, everything lazily load until user view the conversation
+                    conversation.map[conversationId] = {
+                        initLoad: false,
+                        numberOfUnread: 0,
+                        draftMessage: '',
+                        notes: []
+                    };
+
+                    //but need to label there is new post to the conversation
+                    conversation.map[conversationId].numberOfUnread++;
                 }
             });
 
