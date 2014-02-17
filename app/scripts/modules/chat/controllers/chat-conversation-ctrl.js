@@ -38,7 +38,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     $scope.$watch('draftMessage', function (newValue) {
-        if($scope.chat.conversation.map[$scope.selectedConversationId]){
+        if ($scope.chat.conversation.map[$scope.selectedConversationId]) {
             $scope.chat.conversation.map[$scope.selectedConversationId].draftMessage = newValue;
         }
     });
@@ -60,7 +60,10 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
             if (!$scope.chat.conversation.map[$scope.selectedConversationId].initLoad) {
                 //if the init load not complete, try to load all history
-                XmppService.getPastConversation($scope.chat.conversation.pubSubId, $scope.selectedConversationId).then(
+                XmppService.getPastConversation(
+                        $scope.chat.conversation.pubSubId,
+                        $scope.selectedConversationId,
+                        $scope.chat.conversation.map[$scope.selectedConversationId].notes).then(
                     function () {
                         $scope.chat.conversation.map[$scope.selectedConversationId].initLoad = true;
                     }
@@ -70,20 +73,31 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     }, true);
 
 
-    $scope.createConversation = function () {
+    $scope.openConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1018');
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1019');
             },
 
             subscribe = function () {
-                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1018');
+                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1019');
             };
 
-        createNode().then(subscribe()).then(getSubscriptionList());
+        //try to subscribe first, if conversation not exist, create one.
+        subscribe().then(
+            function () {
+                $log.debug('subscribe in success');
+                getSubscriptionList();
+            },
+            function (code) {
+                if (code === 404) {
+                    createNode().then(subscribe()).then(getSubscriptionList());
+                }
+            }
+        );
     };
 
     $scope.publishNote = function ($event) {
-        XmppService.publish($scope.chat.conversation.pubSubId, $scope.selectedConversationId,  $scope.draftMessage ).then(function () {
+        XmppService.publish($scope.chat.conversation.pubSubId, $scope.selectedConversationId, $scope.draftMessage).then(function () {
             $scope.draftMessage = '';
         });
         $event.preventDefault();

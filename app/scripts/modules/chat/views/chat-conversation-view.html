@@ -1,6 +1,6 @@
 <div id="conversationPanel" class="container-fluid">
     <div id="conversationBar" class="tool-bar tabbed row-fluid">
-        <a class="btn btn-icon" ng-click="createConversation()">
+        <a class="btn btn-icon" ng-click="openConversation()">
             <i class="icon-new-entity"></i><span>&nbspOpen</span>
         </a>
         <span class="divider-vertical"></span>
@@ -22,12 +22,13 @@
     <div ng-show="selectedConversationId" id="converstationPost" class="row-fluid">
         <div><h4>{{selectedConversationId}}</h4></div>
         <div>
-            <textarea id="converstationInput" rows="3" placeholder="Enter your message, Ctrl+Enter to send"
+            <textarea id="converstationInput" rows="3" placeholder="Enter your message, Ctrl+Enter to post"
                       ng-model="draftMessage" ui-keydown="{'ctrl-enter': 'publishNote($event)'}"></textarea>
         </div>
     </div>
     <div ng-show="selectedConversationId" id="conversationDetail" class="row-fluid">
-        <div class="accordion-group" ng-repeat="note in chat.conversation.map[selectedConversationId].notes">
+        <div class="accordion-group fade-in-animation"
+             ng-repeat="note in chat.conversation.map[selectedConversationId].notes | orderBy:'timestamp':true">
             <div class="accordion-heading">
                 <h4 href="#collapseOne" data-parent="#accordion2" data-toggle="collapse" class="accordion-toggle">
                     <i class="icon-triangle"></i>{{note.publisher}} at {{note.timestamp}} </h4>

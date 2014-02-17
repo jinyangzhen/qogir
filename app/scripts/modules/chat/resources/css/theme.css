@@ -90,3 +90,32 @@ div > div.ngSelectionCell.checkboxes {
 .fade-in-animation.ng-hide {
   opacity: 0;
 }
+.fade-in-animation.ng-enter,
+.fade-in-animation.ng-leave,
+.fade-in-animation.ng-move {
+  -webkit-transition: 0.5s linear all;
+  transition: 0.5s linear all;
+  position: relative;
+}
+.fade-in-animation.ng-enter {
+  left: -10px;
+  opacity: 0;
+}
+.fade-in-animation.ng-enter.ng-enter-active {
+  left: 0;
+  opacity: 1;
+}
+.fade-in-animation.ng-leave {
+  left: 0;
+  opacity: 1;
+}
+.fade-in-animation.ng-leave.ng-leave-active {
+  left: -10px;
+  opacity: 0;
+}
+.fade-in-animation.ng-move {
+  opacity: 0.5;
+}
+.fade-in-animation.ng-move.ng-move-active {
+  opacity: 1;
+}

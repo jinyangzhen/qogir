@@ -577,8 +577,16 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                 deferred.resolve();
             },
             function (err) {
-                $log(err);
-                deferred.reject();
+                var jqErr = $(err).find('iq > error'), code = jqErr.attr('code');
+
+                if (code === '404') {
+                    $log.warn('publish node ' + recordId + ' not exist');
+                    deferred.reject(404);
+                }
+                else {
+                    $log.warn('not subscribed because ' + err);
+                    deferred.reject(code);
+                }
             }
         );
 
@@ -595,8 +603,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {xmlns: NS_PUBSUB})
-                .c('unsubscribe', {node: '5W0j5f2nRHnvlI5', jid: 'demo@jinyangz6/86cb7b16'}),
-            //.c('unsubscribe', {node: recordId, jid: fullJabberId}),
+                .c('unsubscribe', {node: recordId, jid: fullJabberId}),
             function (iq) {
                 $log.debug(iq);
                 deferred.resolve();
@@ -629,6 +636,15 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         connection.send(invitationMsg);
     };
 
+
+    function getConversationNoteFromJqObject(jqObject) {
+        return {
+            publisher: jqObject.find('item > x > field[var="publisher"] > value').text(),
+            timestamp: jqObject.find('item x > field[var="timestamp"] > value').text(),
+            comment: jqObject.find('item x > field[var="comment"] > value').text()
+        };
+    }
+
     /**
      * Attach the listener when pubsub srv discovered
      * @param conversation  the domain model which hold all conversation data
@@ -645,12 +661,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                 if (conversation.map[conversationId] && conversation.map[conversationId].notes) {
                     for (var i = 0, j = items.length; i < j; i++) {
                         jqItem = $(items[i]);
-                        note = {
-                            publisher: jqItem.find('item > x > field[var="publisher"] > value').text(),
-                            timestamp: jqItem.find('item x > field[var="timestamp"] > value').text(),
-                            comment: jqItem.find('item x > field[var="comment"] > value').text()
-                        }
-
+                        note = getConversationNoteFromJqObject(jqItem);
                         conversation.map[conversationId].notes.push(note);
                     }
                 }
@@ -708,7 +719,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param recordId
      * @returns {*}
      */
-    this.getPastConversation = function (pubSubId, recordId) {
+    this.getPastConversation = function (pubSubId, recordId, notes) {
         var deferred = $q.defer();
 
         connection.sendIQ(
@@ -717,6 +728,18 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             ),
             function (iq) {
                 $log.debug(iq);
+
+                $timeout(
+                    function () {
+                        var jqItem, note, items = $(iq).find('iq > pubsub > items > item');
+                        for (var i = 0, j = items.length; i < j; i++) {
+                            jqItem = $(items[i]);
+                            note = getConversationNoteFromJqObject(jqItem);
+                            notes.push(note);
+                        }
+                    }
+                );
+
                 deferred.resolve();
             },
             function (err) {
