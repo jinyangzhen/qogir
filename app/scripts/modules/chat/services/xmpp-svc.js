@@ -793,7 +793,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         conversationId: jqNode.attr('node'),
                         subscriber: jqNode.attr('jid'),
                         status: jqNode.attr('subscription'),
-                        numberOfSubscriptions: 'N/A',
+                        numberOfSubscriptions: '',
                         owner: null,
                         participants: [],
                         title: null

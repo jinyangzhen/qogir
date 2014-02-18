@@ -5,7 +5,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     var idCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
             '<span ng-cell-text>{{row.getProperty(col.field)}}&nbsp&nbsp </span>' +
             '<span class="label label-warning" class="fade-in-animation" ' +
-            'ng-if="getUnreadNumber(row.getProperty(col.field))>0">{{getUnreadNumber(row.getProperty(col.field))}}</span></div>',
+            'ng-show="getUnreadNumber(row.getProperty(col.field))>0">{{getUnreadNumber(row.getProperty(col.field))}}</span></div>',
 
         checkboxCellTemplate = '<div class="ngSelectionCell checkboxes">' +
             '<label><input tabindex="-1" class="ngSelectionCheckbox" type="checkbox" ng-checked="row.selected" />' +
@@ -42,7 +42,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
             { field: 'conversationId', displayName: 'Record ID', cellTemplate: idCellTemplate },
             { field: 'title', displayName: 'Record Title' },
             { field: 'owner', displayName: 'Owner' },
-            { field: 'numberOfSubscriptions', displayName: 'Participant #' }
+            { field: 'numberOfSubscriptions', displayName: 'Number of Participant' }
         ],
         data: 'chat.conversation.subscriptions',
         showSelectionCheckbox: true,
