@@ -486,7 +486,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
 
         connection.sendIQ(
             $iq({type: 'set'})
-                .c('query', {'xmlns': 'com:hp:emei:iq:gateway', 'session-id': id }),
+                .c('query', {'xmlns': 'com:hp:emei:iq:create-ticket', 'session-id': id }),
             function (iq) {
                 deferred.resolve($(iq).find('iq > query[ticketId]').attr('ticketId'));
             }, function (err) {
