@@ -498,7 +498,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
         return deferred.promise;
     };
 
-    this.getSuggestedUsers =function (objectName, objectId){
+    this.getSuggestedUsers = function (objectName, objectId) {
         var deferred = $q.defer();
 
         connection.sendIQ(
@@ -823,7 +823,10 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         .then(function (resultedSubscription) {
                             var deferred = $q.defer();
 
-                            if (resultedSubscription.owner === Strophe.getBareJidFromJid(fullJabberId)) {
+                            //only keep node (user name) of the Jabber ID for owner field
+                            resultedSubscription.owner = resultedSubscription.owner.split('@')[0];
+
+                            if (resultedSubscription.owner === Strophe.getBareJidFromJid(fullJabberId).split('@')[0]) {
                                 //as per XEP-0060, only node owner can get subscription details of one specific node
                                 return self.getAllSubscriptionsByRecord(pubSubId, resultedSubscription.conversationId, resultedSubscription);
                             }

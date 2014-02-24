@@ -133,6 +133,10 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         );
     };
 
+    $scope.isSubscriptionOwner = function (){
+        return $scope.currentSubscription.owner === XmppService.getUser();
+    };
+
     $scope.publishNote = function ($event) {
         XmppService.publish($scope.chat.conversation.pubSubId, $scope.selectedConversationId, $scope.draftMessage).then(function () {
             $scope.draftMessage = '';
@@ -220,12 +224,17 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
             $q.all(promises).then(function () {
                 $scope.participantsToInvite.length = 0;
+                $scope.isParticipantPanelExpand = false;
             });
         }
         else {
             //TODO visually disable the btn if conversation not selected
             $log.warn('please select one covnersation');
         }
+    };
+
+    $scope.closeParticipantPanel = function (){
+        $scope.isParticipantPanelExpand = false;
     };
 
     $scope.unsubscribe = function () {
