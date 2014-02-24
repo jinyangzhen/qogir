@@ -13,11 +13,12 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
                 $scope.chat.conversation = {
                     pubSubId: jid,
                     subscriptions: [],    //summary of each conversation
-                    map: {}               //details of conversation, index with the conversation id.
+                    map: {},              //details of conversation, index with the conversation id.
+                    numberOfInvitation:0  //number of new invitation
                 };
 
                 XmppService.attachConversationListener($scope.chat.conversation);
-                XmppService.attachInvitationListener();
+                XmppService.attachInvitationListener($scope.chat.conversation);
             });
         },
 

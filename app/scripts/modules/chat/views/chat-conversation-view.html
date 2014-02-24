@@ -13,7 +13,11 @@
         <span class="divider-vertical"></span>
         <a class="btn btn-icon" ng-click="refreshConversationList()">
             <i class="icon-refresh "></i>
+            <span ng-if="chat.conversation.numberOfInvitation > 0" class="label label-info">
+            {{chat.conversation.numberOfInvitation}}
+            </span>
         </a>
+
     </div>
     <div id="conversationGrid" class="row-fluid" ng-grid="conversationGridOptions"></div>
     <div id="participantPanel" ng-if="isParticipantPanelExpand" class="row-fluid fade-in-animation">

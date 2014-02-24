@@ -17,6 +17,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     //refresh the subscriptions list of the current user
     function getSubscriptionList() {
+        $scope.chat.conversation.numberOfInvitation = 0;
         return XmppService.getAllSubscriptionsByUser($scope.chat.conversation.pubSubId).then(function (subscriptions) {
             $scope.chat.conversation.subscriptions = subscriptions;
         });
@@ -133,7 +134,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         );
     };
 
-    $scope.isSubscriptionOwner = function (){
+    $scope.isSubscriptionOwner = function () {
         return $scope.currentSubscription.owner === XmppService.getUser();
     };
 
@@ -233,7 +234,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         }
     };
 
-    $scope.closeParticipantPanel = function (){
+    $scope.closeParticipantPanel = function () {
         $scope.isParticipantPanelExpand = false;
     };
 

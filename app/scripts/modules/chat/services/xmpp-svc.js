@@ -723,7 +723,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * Attach the listener after pubsub srv discovered
      * @param pubSubId
      */
-    this.attachInvitationListener = function () {
+    this.attachInvitationListener = function (conversation) {
         var self = this;
 
         //to monitor conversation invitation
@@ -731,10 +731,14 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             //new invitation will be captured here
             $log.debug(msg);
 
-            var pubSubId = $(msg).attr('pubsub'),
-                conversationId = $(msg).attr('conversation');
+            $timeout(function () {
+                var pubSubId = $(msg).attr('pubsub'),
+                    conversationId = $(msg).attr('conversation');
 
-            self.subscribe(pubSubId, conversationId);
+                self.subscribe(pubSubId, conversationId).then(function () {
+                    conversation.numberOfInvitation++;
+                });
+            });
 
             return true;
         }, NS_PUBSUB_EVENT, 'message', 'normal');
