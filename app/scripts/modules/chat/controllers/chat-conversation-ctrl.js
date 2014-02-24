@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('chat').controller('ChatConversationCtrl', function ($scope, $state, XmppService, $log) {
+angular.module('chat').controller('ChatConversationCtrl', function ($scope, $state, XmppService, $log, $q) {
 
     var idCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
             '<span ng-cell-text>{{row.getProperty(col.field)}}&nbsp&nbsp </span>' +
@@ -24,8 +24,8 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.getTabModel('_chat_conversation').active = true;
 
-    $scope.getUnreadNumber = function (recordId){
-        if(recordId !== $scope.selectedConversationId && $scope.chat.conversation.map[recordId]) {
+    $scope.getUnreadNumber = function (recordId) {
+        if (recordId !== $scope.selectedConversationId && $scope.chat.conversation.map[recordId]) {
             return  $scope.chat.conversation.map[recordId].numberOfUnread;
         }
         else {
@@ -36,6 +36,8 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     //view model
+    $scope.isParticipantPanelExpand = false;
+    $scope.participantsToInvite = [];
     $scope.draftMessage = '';
     $scope.conversationGridOptions = {
         columnDefs: [
@@ -53,6 +55,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         selectedItems: []
     };
 
+
     $scope.$watch('draftMessage', function (newValue) {
         if ($scope.chat.conversation.map[$scope.selectedConversationId]) {
             $scope.chat.conversation.map[$scope.selectedConversationId].draftMessage = newValue;
@@ -61,6 +64,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.$watch('conversationGridOptions.selectedItems', function (selectedItems, previousItems) {
         var previousId;
+
+        //force to close the expanded participant panel when switch btw conversations
+        $scope.isParticipantPanelExpand = false;
+        //also clean up the view model
+        $scope.participantsToInvite = [];
 
         if (previousItems.length === 1) {
             previousId = previousItems[0].conversationId;
@@ -72,6 +80,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         }
 
         if (selectedItems.length === 1) {
+            $scope.currentSubscription = selectedItems[0];
             $scope.selectedConversationId = selectedItems[0].conversationId;
 
             if ($scope.chat.conversation.map[$scope.selectedConversationId] === undefined) {
@@ -103,11 +112,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.openConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'SD1019');
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'IM10007');
             },
 
             subscribe = function () {
-                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'SD1019');
+                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'IM10007');
             };
 
         //try to subscribe first, if conversation not exist, create one.
@@ -131,9 +140,87 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         $event.preventDefault();
     };
 
-    $scope.addParticipant = function () {
+    function convertToTreeViewModel(node) {
+        var result = {
+            label: '',
+            data: {}
+        };
+
+        if (node.groupId) {
+            //this node is a group
+            result.label = node.groupName;
+            result.data.type = 'group';
+            result.children = [];
+        }
+        else if (node.id) {
+            //this is a user
+            result.label = node.id;
+            result.data.type = 'user';
+        }
+
+        if (node.groups) {
+            //contain subgroup
+            for (var i = 0, j = node.groups.length; i < j; i++) {
+                result.children.push(convertToTreeViewModel(node.groups[i]));
+            }
+        }
+        else if (node.users) {
+            //contain users
+            for (var m = 0, n = node.users.length; m < n; m++) {
+                result.children.push(convertToTreeViewModel(node.users[m]));
+            }
+        }
+
+        return result;
+    }
+
+    $scope.handleTreeSelect = function (branch) {
+        var userName;
+
+        if (branch.data.type === 'user') {
+            userName = branch.label;
+            for (var i = 0, j = $scope.participantsToInvite.length; i < j; i++) {
+                if ($scope.participantsToInvite[i] === userName) {
+                    $scope.participantsToInvite.splice(i);
+                    return;
+                }
+            }
+            $scope.participantsToInvite.push(userName);
+        }
+    };
+
+
+    $scope.displayParticipantPanel = function () {
         if ($scope.selectedConversationId) {
-            XmppService.inviteParticipant($scope.chat.conversation.pubSubId, $scope.selectedConversationId, 'admin');
+            if (!$scope.suggestedGroups || $scope.suggestedGroups.label !== $scope.selectedConversationId) {
+                //initialize the group for the conversation
+                XmppService.getSuggestedUsers('probsummary', 'IM10007').then(function (group) {
+                    $scope.suggestedGroups = convertToTreeViewModel(group);
+                });
+            }
+            $scope.isParticipantPanelExpand = !$scope.isParticipantPanelExpand;
+        }
+        else {
+            //TODO visually disable the btn if conversation not selected
+            $log.warn('please select one covnersation');
+        }
+    };
+
+    $scope.inviteParticipant = function () {
+        var promises = [];
+
+        if ($scope.selectedConversationId) {
+            for (var i = 0, j = $scope.participantsToInvite.length; i < j; i++) {
+                promises.push(XmppService.inviteParticipant(
+                    $scope.chat.conversation.pubSubId,
+                    $scope.selectedConversationId,
+                    $scope.participantsToInvite[i]
+                ));
+            }
+
+            $q.all(promises).then(function () {
+                $scope.participantsToInvite.length = 0;
+            });
         }
         else {
             //TODO visually disable the btn if conversation not selected

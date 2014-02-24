@@ -490,7 +490,27 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             function (iq) {
                 deferred.resolve($(iq).find('iq > query[ticketId]').attr('ticketId'));
             }, function (err) {
-                $log(err);
+                $log.error(err);
+                deferred.reject();
+            }
+        );
+
+        return deferred.promise;
+    };
+
+    this.getSuggestedUsers =function (objectName, objectId){
+        var deferred = $q.defer();
+
+        connection.sendIQ(
+            $iq({type: 'get'})
+                .c('query', {'xmlns': 'com:hp:emei:iq:suggested-group', 'object-name': objectName, 'object-id': objectId }),
+            function (iq) {
+                $log.debug(iq);
+                var reply = $(iq).find('iq > query > result').text();
+                var suggestedGroups = JSON.parse(reply);
+                deferred.resolve(suggestedGroups);
+            }, function (err) {
+                $log.error(err);
                 deferred.reject();
             }
         );

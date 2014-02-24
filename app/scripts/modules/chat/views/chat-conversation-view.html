@@ -4,7 +4,7 @@
             <i class="icon-new-entity"></i><span>&nbspOpen</span>
         </a>
         <span class="divider-vertical"></span>
-        <a class="btn btn-icon" ng-click="addParticipant()">
+        <a class="btn btn-icon" ng-click="displayParticipantPanel()">
             <i class="icon-user"></i><span>&nbspAdd&nbspParticipants</span>
         </a>
         <a class="btn btn-icon" ng-click="unsubscribe()">
@@ -16,6 +16,31 @@
         </a>
     </div>
     <div id="conversationGrid" class="row-fluid" ng-grid="conversationGridOptions"></div>
+    <div id="participantPanel" ng-if="isParticipantPanelExpand"  class="row-fluid fade-in-animation" >
+        <div id="participantActionPanel" class="span7">
+            <div id="currentParticipant">
+                <div class="alert alert-warning ng-binding">
+                    <strong>Current participants:</strong>
+                    <span ng-repeat="name in currentSubscription.participants">{{name.split('@')[0] + ', '}}</span>
+                </div>
+            </div>
+            <div id="participantTobeAdded">
+                <div class="alert alert-success ng-binding">
+                    <strong>Participants to invite:</strong>
+                    <span ng-repeat="name in participantsToInvite">{{name.split('@')[0] + ', '}}</span>
+                </div>
+            </div>
+            <div id="actionToProceed">
+                <button class="btn min-width btn-primary" type="button" ng-click="inviteParticipant()">Invite</button>
+                <button class="btn min-width" type="button">Close</button>
+            </div>
+        </div>
+        <div id="suggestedGroupTree" class="span5">
+            <abn-tree ng-if="suggestedGroups" tree-data="suggestedGroups.children" icon-expand="icon-add" icon-collapse="icon-minus" icon-leaf="icon-user"
+                      on-select="handleTreeSelect(branch)" expand-level="2" initial-selection="Vegetable">
+            </abn-tree>
+        </div>
+    </div>
     <div ng-show="selectedConversationId" id="converstationPost" class="row-fluid">
         <div><h4>{{selectedConversationId}}</h4></div>
         <div>
@@ -23,6 +48,7 @@
                       ng-model="draftMessage" ui-keydown="{'ctrl-enter': 'publishNote($event)'}"></textarea>
         </div>
     </div>
+
     <div ng-show="selectedConversationId" id="conversationDetail" class="row-fluid">
         <div class="accordion-group fade-in-animation"
              ng-repeat="note in chat.conversation.map[selectedConversationId].notes | orderBy:'timestamp':true">

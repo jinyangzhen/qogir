@@ -24,7 +24,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
         discoverFastpath = function () {
             return  XmppService.discoverFastpath().then(function (jid) {
                 return jid;
-            })
+            });
         },
 
         discoverWorkgroup = function (jid) {
@@ -84,7 +84,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
             return  null;
         };
 
-        discoverPubsub().then(discoverFastpath).then(discoverWorkgroup).then(function () {
+        discoverPubsub().then(discoverFastpath).then(discoverWorkgroup).finally(function () {
             //IMPORTANT: only after all services initialized, make the user presence available on the server.
             //Because server sends offline msg as long as a user's presence is available, so we have to make sure correct
             //initialization order to prepare all kinds of messages' listener.
