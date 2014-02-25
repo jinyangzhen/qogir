@@ -81,7 +81,7 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
     };
 
     $scope.refuseIncomingCall = function (offering) {
-
+         //TODO
     };
 
 });

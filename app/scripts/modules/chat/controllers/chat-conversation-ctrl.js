@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('chat').controller('ChatConversationCtrl', function ($scope, $state, XmppService, $log, $q) {
+angular.module('chat').controller('ChatConversationCtrl', function ($scope, $state, XmppService, $log, $q, PersistenceService, $timeout) {
 
     var idCellTemplate = '<div class="ngCellText" ng-class="col.colIndex()">' +
             '<span ng-cell-text>{{row.getProperty(col.field)}}&nbsp&nbsp </span>' +
@@ -13,7 +13,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
         rowTemplate = '<div ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell {{col.cellClass}}">' +
             '<div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div>' +
-            '<div ng-cell></div></div>';
+            '<div ng-cell></div></div>',
+
+        systemOfRecordId,
+        systemOfRecordType,
+        taskPromise;
 
     //refresh the subscriptions list of the current user
     function getSubscriptionList() {
@@ -22,6 +26,19 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
             $scope.chat.conversation.subscriptions = subscriptions;
         });
     }
+
+    function checkSystemOfRecordFromLocalStorage() {
+        systemOfRecordId = PersistenceService.getItemRawValue('webchat.context.id');
+        systemOfRecordType = PersistenceService.getItemRawValue('webchat.context.objectName')
+        $scope.systemOfRecordId = systemOfRecordId;
+        taskPromise = $timeout(checkSystemOfRecordFromLocalStorage, 250);
+    }
+
+    checkSystemOfRecordFromLocalStorage();
+
+    $scope.$on('$destroy', function () {
+        $timeout.cancel(taskPromise); //cancel any pending check task
+    });
 
     $scope.getTabModel('_chat_conversation').active = true;
 
@@ -113,11 +130,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.openConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, 'IM10007');
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, systemOfRecordId);
             },
 
             subscribe = function () {
-                return XmppService.subscribe($scope.chat.conversation.pubSubId, 'IM10007');
+                return XmppService.subscribe($scope.chat.conversation.pubSubId, systemOfRecordId);
             };
 
         //try to subscribe first, if conversation not exist, create one.
@@ -135,7 +152,11 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     $scope.isSubscriptionOwner = function () {
-        return $scope.currentSubscription.owner === XmppService.getUser();
+        if($scope.currentSubscription) {
+            return $scope.currentSubscription.owner === XmppService.getUser();
+        }
+
+        return false;
     };
 
     $scope.publishNote = function ($event) {
@@ -199,7 +220,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         if ($scope.selectedConversationId) {
             if (!$scope.suggestedGroups || $scope.suggestedGroups.label !== $scope.selectedConversationId) {
                 //initialize the group for the conversation
-                XmppService.getSuggestedUsers('probsummary', 'IM10007').then(function (group) {
+                XmppService.getSuggestedUsers(systemOfRecordType, systemOfRecordId).then(function (group) {
                     $scope.suggestedGroups = convertToTreeViewModel(group);
                 });
             }
@@ -255,5 +276,6 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.refreshConversationList = getSubscriptionList;
 
+    //preload the subscription list
     getSubscriptionList();
 });

@@ -99,7 +99,7 @@ angular.module('chat').controller('ChatMainCtrl', function ($scope, $state, $sta
         $scope.$on('$destroy', function () {
             XmppService.detachConversationListener();
             XmppService.detachInvitationListener();
-        })
+        });
     }
 
     if ($stateParams.userid && $stateParams.passwd) {

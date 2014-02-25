@@ -22,6 +22,10 @@ angular.module('main').service('PersistenceService', function () {
         return  value === 'undefined' ? undefined : JSON.parse(value);  //chrome would return 'undefined' string for non-exist item.
     };
 
+    this.getItemRawValue = function (key) {
+        return localStorage.getItem(key);
+    };
+
     this.removeItem = function (key) {
         localStorage.removeItem(key);
     }
