@@ -23,14 +23,15 @@ angular.module('chat').controller('ChatHelpDeskCtrl', function ($scope, $state, 
             { field: 'position', displayName: 'Position' },
             { field: 'waiting', displayName: 'Age' },
             { field: 'joinTime', displayName: 'Since' },
-            { field: 'offering', displayName: 'Action', cellTemplate: actionCellTemplate }
+            { field: 'offering', displayName: 'Action', cellTemplate: actionCellTemplate, width:'230px' }
         ],
         data: 'chat.helpdesk.queue.items',
         showSelectionCheckbox: true,
         multiSelect: false,
         enableHighlighting: true,
         checkboxCellTemplate: checkboxCellTemplate,
-        rowTemplate: rowTemplate
+        rowTemplate: rowTemplate,
+        enableColumnResize: true  //resizable ng-grid seems to not able to refresh the viewport when sizing a column, need to look back
     };
 
     $scope.joinGroup = function (group) {
