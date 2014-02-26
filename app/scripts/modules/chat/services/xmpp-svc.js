@@ -525,14 +525,14 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
      * @param recordTitle   the title of system of record
      * @returns {*}
      */
-    this.createConversationNode = function (pubSubId, recordId, recordTitle) {
+    this.createConversationNode = function (pubSubId, recordId, recordType, recordTitle) {
         var deferred = $q.defer();
 
         connection.sendIQ(
             $iq({from: fullJabberId, to: pubSubId, type: 'set'}).c('pubsub', {'xmlns': NS_PUBSUB}).c('create', {node: recordId})
                 .up().c('configure').c('x', {'xmlns': NS_JABBER_X_DATA, type: 'submit'})
                 .c('field', {'var': 'FORM_TYPE', 'type': 'hidden'}).c('value').t(NS_PUBSUB_CONFIG).up().up()
-                .c('field', {'var': 'pubsub#title'}).c('value').t(recordId + '-' + (recordTitle || '')).up().up()
+                .c('field', {'var': 'pubsub#title'}).c('value').t(recordId + '-' + recordType + '-' + (recordTitle || '')).up().up()
                 //configure this node allow:
                 //  1. all to contribute
                 //  2. conversation records are persisted
@@ -820,6 +820,7 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
                         numberOfSubscriptions: '',
                         owner: null,
                         participants: [],
+                        type: null,
                         title: null
                     };
 
@@ -872,8 +873,11 @@ angular.module('chat').service('XmppService', function ($log, $q, $timeout, Pers
             function (iq) {
                 $log.debug(iq);
                 var theTitle = $(iq).find('iq > query > x >field[var="pubsub#title"] > value').text(),
-                    theOwner = $(iq).find('iq > query > x >field[var="pubsub#owner"] > value').text();
-                resultObj.title = theTitle.split('-')[1];
+                    theOwner = $(iq).find('iq > query > x >field[var="pubsub#owner"] > value').text(),
+                    recordArray = theTitle.split('-');
+
+                resultObj.type =  recordArray[1];
+                resultObj.title = recordArray[2];
                 resultObj.owner = theOwner;
                 deferred.resolve(resultObj);
             },

@@ -130,7 +130,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.openConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, systemOfRecordId);
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, systemOfRecordId, systemOfRecordType);
             },
 
             subscribe = function () {
@@ -220,7 +220,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         if ($scope.selectedConversationId) {
             if (!$scope.suggestedGroups || $scope.suggestedGroups.label !== $scope.selectedConversationId) {
                 //initialize the group for the conversation
-                XmppService.getSuggestedUsers(systemOfRecordType, systemOfRecordId).then(function (group) {
+                XmppService.getSuggestedUsers($scope.currentSubscription.type, $scope.currentSubscription.conversationId).then(function (group) {
                     $scope.suggestedGroups = convertToTreeViewModel(group);
                 });
             }
