@@ -17,6 +17,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
         systemOfRecordId,
         systemOfRecordType,
+        systemOfRecordTitle,
         taskPromise;
 
     //refresh the subscriptions list of the current user
@@ -27,14 +28,42 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
         });
     }
 
-    function checkSystemOfRecordFromLocalStorage() {
-        systemOfRecordId = PersistenceService.getItemRawValue('webchat.context.id');
-        systemOfRecordType = PersistenceService.getItemRawValue('webchat.context.objectName')
+    function checkSMForCurrentSystemOfRecord() {
+        var currentRecord;
+
+        //if (window.top != window.self && !!window.top.hpsm && !!window.top.hpsm.webchat) {
+        if (window.top && window.top.hpsm && window.top.hpsm.webchat) {
+            var smObject = window.top.hpsm.webchat.getDetailFrame();
+            if (smObject) {
+                currentRecord = window.top.hpsm.webchat.getDetailFrame()['smCollaborationCfg'];
+                if (currentRecord) {
+                    systemOfRecordId = currentRecord.id;
+                    systemOfRecordType = currentRecord.name;
+                    systemOfRecordTitle = currentRecord.title;
+                }
+            }
+        }
+        else {
+            systemOfRecordId = null;
+            systemOfRecordType = null;
+            systemOfRecordTitle = null;
+        }
+
         $scope.systemOfRecordId = systemOfRecordId;
-        taskPromise = $timeout(checkSystemOfRecordFromLocalStorage, 250);
+        taskPromise = $timeout(checkSMForCurrentSystemOfRecord, 250);
     }
 
-    checkSystemOfRecordFromLocalStorage();
+    checkSMForCurrentSystemOfRecord();
+
+    /*    function checkSystemOfRecordFromLocalStorage() {
+     systemOfRecordId = PersistenceService.getItemRawValue('webchat.context.id');
+     systemOfRecordType = PersistenceService.getItemRawValue('webchat.context.objectName')
+     $scope.systemOfRecordId = systemOfRecordId;
+     taskPromise = $timeout(checkSystemOfRecordFromLocalStorage, 250);
+     abc();
+     }
+
+     checkSystemOfRecordFromLocalStorage();*/
 
     $scope.$on('$destroy', function () {
         $timeout.cancel(taskPromise); //cancel any pending check task
@@ -50,7 +79,6 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
             //if view the current selected conversation, assume user will see the post immediately, no info badge needed.
             return 0;
         }
-
     };
 
     //view model
@@ -130,7 +158,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
 
     $scope.openConversation = function () {
         var createNode = function () {
-                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, systemOfRecordId, systemOfRecordType);
+                return XmppService.createConversationNode($scope.chat.conversation.pubSubId, systemOfRecordId, systemOfRecordType, systemOfRecordTitle);
             },
 
             subscribe = function () {
@@ -152,7 +180,7 @@ angular.module('chat').controller('ChatConversationCtrl', function ($scope, $sta
     };
 
     $scope.isSubscriptionOwner = function () {
-        if($scope.currentSubscription) {
+        if ($scope.currentSubscription) {
             return $scope.currentSubscription.owner === XmppService.getUser();
         }
 
